@@ -2,6 +2,7 @@ use actix_web::{get, App, HttpResponse, HttpServer, Responder};
 
 #[get("/")]
 async fn root() -> impl Responder {
+    HttpResponse::Ok()
 }
 
 #[actix_web::main]
