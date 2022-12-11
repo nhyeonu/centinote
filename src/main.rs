@@ -40,5 +40,5 @@ async fn main() -> std::io::Result<()> {
             .service(root)
             .service(auth_page)
             .service(auth_api)
-    }).bind(("127.0.0.1", 8080))?.run().await
+    }).bind(("0.0.0.0", 8080))?.run().await
 }
