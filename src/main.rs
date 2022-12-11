@@ -8,7 +8,7 @@ async fn root() -> impl Responder {
 #[get("/auth")]
 async fn auth_page() -> impl Responder {
     let body = r#"
-<form action="/method="post">
+<form method="post">
     <label for="username">Username: </label>
     <input type="text" id="username" name="username" placeholder="Username">
     <label for="password">Password: </label>
