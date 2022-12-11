@@ -1,4 +1,5 @@
-use actix_web::{get, post, App, HttpResponse, HttpServer, Responder};
+use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder};
+use serde::Deserialize;
 
 #[get("/")]
 async fn root() -> impl Responder {
@@ -20,11 +21,24 @@ async fn auth_page() -> impl Responder {
         .body(body)
 }
 
+#[derive(Deserialize)]
+struct Login {
+    username: String,
+    password: String,
+}
+
+#[post("/auth")]
+async fn auth_api(form: web::Form<Login>) -> impl Responder {
+    println!("Username: {} Password: {}", form.username, form.password);
+    HttpResponse::Ok()
+}
+
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     HttpServer::new(|| {
         App::new()
             .service(root)
             .service(auth_page)
+            .service(auth_api)
     }).bind(("127.0.0.1", 8080))?.run().await
 }
