@@ -30,7 +30,7 @@ struct Login {
 #[post("/auth")]
 async fn auth_api(form: web::Form<Login>) -> impl Responder {
     println!("Username: {} Password: {}", form.username, form.password);
-    HttpResponse::Ok()
+    HttpResponse::Found().insert_header(("Location", "/")).finish()
 }
 
 #[actix_web::main]
