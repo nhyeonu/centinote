@@ -1,5 +1,7 @@
 use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder};
 use serde::Deserialize;
+use sqlx::{ConnectOptions, PgPool};
+use sqlx::postgres::{PgConnectOptions, PgPoolOptions};
 
 #[get("/")]
 async fn root() -> impl Responder {
@@ -33,10 +35,20 @@ async fn auth_api(form: web::Form<Login>) -> impl Responder {
     HttpResponse::Found().insert_header(("Location", "/")).finish()
 }
 
+struct State {
+    db_pool: PgPool,
+}
+
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     HttpServer::new(|| {
         App::new()
+            .app_data(web::Data::new(State {
+                db_pool: PgPoolOptions::new()
+                    .max_connections(5)
+                    .connect_lazy("postgres://postgres:insecure@db/centinote")
+                    .unwrap()
+            }))
             .service(root)
             .service(auth_page)
             .service(auth_api)

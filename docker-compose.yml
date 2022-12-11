@@ -4,3 +4,10 @@ services:
     build: .
     ports:
       - "8080:8080"
+    restart: always
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: centinote
+      POSTGRES_PASSWORD: insecure
+    restart: always
