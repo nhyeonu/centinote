@@ -19,8 +19,21 @@ async fn login_page() -> impl Responder {
     <input type="submit" value="Login">
 </form>
 "#;
-    HttpResponse::Ok()
-        .body(body)
+    HttpResponse::Ok().body(body)
+}
+
+#[get("/register")]
+async fn register_page() -> impl Responder {
+    let body = r#"
+<form method="post">
+    <label for="username">Username: </label>
+    <input type="text" id="username" name="username" placeholder="Username">
+    <label for="password">Password: </label>
+    <input type="password" id="password" name="password" placeholder="Password">
+    <input type="submit" value="Register">
+</form>
+"#;
+    HttpResponse::Ok().body(body)
 }
 
 #[derive(Deserialize)]
@@ -30,6 +43,18 @@ struct Login {
 }
 
 #[post("/login")]
+async fn login_api(form: web::Form<Login>) -> impl Responder {
+    println!("Username: {} Password: {}", form.username, form.password);
+    HttpResponse::Found().insert_header(("Location", "/")).finish()
+}
+
+#[derive(Deserialize)]
+struct Register {
+    username: String,
+    password: String,
+}
+
+#[post("/register")]
 async fn login_api(form: web::Form<Login>) -> impl Responder {
     println!("Username: {} Password: {}", form.username, form.password);
     HttpResponse::Found().insert_header(("Location", "/")).finish()
@@ -52,5 +77,6 @@ async fn main() -> std::io::Result<()> {
             .service(root)
             .service(login_page)
             .service(login_api)
+            .service(register_page)
     }).bind(("0.0.0.0", 8080))?.run().await
 }
