@@ -8,8 +8,8 @@ async fn root() -> impl Responder {
     HttpResponse::Ok()
 }
 
-#[get("/auth")]
-async fn auth_page() -> impl Responder {
+#[get("/login")]
+async fn login_page() -> impl Responder {
     let body = r#"
 <form method="post">
     <label for="username">Username: </label>
@@ -29,8 +29,8 @@ struct Login {
     password: String,
 }
 
-#[post("/auth")]
-async fn auth_api(form: web::Form<Login>) -> impl Responder {
+#[post("/login")]
+async fn login_api(form: web::Form<Login>) -> impl Responder {
     println!("Username: {} Password: {}", form.username, form.password);
     HttpResponse::Found().insert_header(("Location", "/")).finish()
 }
@@ -50,7 +50,7 @@ async fn main() -> std::io::Result<()> {
                     .unwrap()
             }))
             .service(root)
-            .service(auth_page)
-            .service(auth_api)
+            .service(login_page)
+            .service(login_api)
     }).bind(("0.0.0.0", 8080))?.run().await
 }
