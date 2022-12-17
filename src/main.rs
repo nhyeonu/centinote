@@ -55,7 +55,7 @@ struct Register {
 }
 
 #[post("/register")]
-async fn login_api(form: web::Form<Login>) -> impl Responder {
+async fn register_api(form: web::Form<Login>) -> impl Responder {
     println!("Username: {} Password: {}", form.username, form.password);
     HttpResponse::Found().insert_header(("Location", "/")).finish()
 }
@@ -78,5 +78,6 @@ async fn main() -> std::io::Result<()> {
             .service(login_page)
             .service(login_api)
             .service(register_page)
+            .service(register_api)
     }).bind(("0.0.0.0", 8080))?.run().await
 }
