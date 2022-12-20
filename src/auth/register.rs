@@ -12,7 +12,7 @@ struct Register {
     password: String,
 }
 
-#[post("/api/register")]
+#[post("/register")]
 async fn post(data: web::Data<State<'_>>, info: web::Json<Register>) -> impl Responder {
     // len() returns number of bytes in a string and VARCHAR in SQL also counts length in bytes.
     // Username length limit must be equal to the length limit defined by scripts at sql/migrations

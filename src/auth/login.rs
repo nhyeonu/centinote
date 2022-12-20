@@ -13,7 +13,7 @@ struct Login {
     password: String,
 }
 
-#[post("/api/login")]
+#[post("/login")]
 async fn post(data: web::Data<State<'_>>, info: web::Json<Login>) -> impl Responder {
     let password_select_result = sqlx::query("SELECT HashedPassword AS password_hash, Uuid AS uuid FROM users WHERE Username = $1")
         .bind(info.username.clone())

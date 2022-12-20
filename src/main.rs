@@ -37,8 +37,11 @@ async fn main() -> std::io::Result<()> {
                 db_pool: pool.clone(),
                 argon2: Argon2::default(),
             }))
-            .service(crate::auth::login::post)
-            .service(crate::auth::register::post)
+            .service(
+                web::scope("/api")
+                    .service(crate::auth::login::post)
+                    .service(crate::auth::register::post)
+            )
             .service(actix_files::Files::new("/", "/usr/local/share/centinote/html").index_file("index.html"))
     }).bind(("0.0.0.0", 8080))?.run().await
 }
