@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Editor - Centinote</title>
+		<link rel="stylesheet" href="styles.css">
+	</head>
+	<body>
+		<div id="topbar">
+			<h1>CENTINOTE</h1>
+			<a href="editor.html"><div id="add" class="button"><img src="icons/plus-light.svg"></img></div></a>
+			<a href=""><div id="user" class="button"><img src="icons/user-light.svg"></img></div></a>
+		</div>
+        <div id="content">
+            <form id="editor-form" onsubmit="submitForm(this); return false;">
+                <label for="title">Title</label><br>
+                <input id="title" name="title" type="text" placeholder="Title..."><br>
+                <label for="body">Paragraph</label><br>
+                <textarea id="body" name="body"></textarea><br>
+                <input type="submit" value="Save"></input>
+            </form>
+        </div>
+        <script src="script.js"></script>
+        <script src="editor.js"></script>
+	</body>
+</html>

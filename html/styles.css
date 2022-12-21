@@ -42,7 +42,7 @@ input, textarea {
 
 textarea {
     resize: none;
-    height: 130px;
+    height: 180px;
 }
 
 label {
@@ -97,9 +97,13 @@ label {
 	text-decoration: none;
 }
 
+#content {
+    width: 600px;
+    margin: 12px auto;
+}
+
 .group {
-	margin: 12px auto;
-	width: 600px;
+	margin: 12px 0;
 	border-left: 3px solid var(--border-color);
 	padding-left: 11px;
 	padding-bottom: 10px;

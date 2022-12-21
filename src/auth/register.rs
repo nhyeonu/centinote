@@ -1,10 +1,39 @@
 use actix_web::{post, web, HttpResponse, Responder};
 use serde::Deserialize;
-use sqlx::Row;
+use sqlx::{PgPool, Row};
+use argon2::Argon2;
 use argon2::password_hash::rand_core::OsRng;
 use argon2::password_hash::{PasswordHasher, SaltString};
 use uuid::Uuid;
 use crate::state::State;
+
+async fn create_user(db_pool: &PgPool, argon2: &Argon2<'_>, username: &str, password: &str) -> Result<String, HttpResponse> {
+    let salt = SaltString::generate(&mut OsRng);
+    let password_hash = match argon2.hash_password(password.as_bytes(), &salt) {
+        Ok(hash) => hash.to_string(),
+        Err(error) => {
+            println!("{}", error);
+            return Err(HttpResponse::InternalServerError().finish());
+        }
+    };
+
+    let user_uuid = Uuid::new_v4().to_string();
+
+    let insert_request = sqlx::query("INSERT INTO users VALUES ($1, $2, $3);")
+        .bind(user_uuid.clone())
+        .bind(username)
+        .bind(password_hash)
+        .execute(db_pool)
+        .await;
+
+    match insert_request {
+        Ok(_) => return Ok(user_uuid),
+        Err(error) => {
+            println!("{}", error);
+            return Err(HttpResponse::InternalServerError().finish());
+        }
+    }
+}
 
 #[derive(Deserialize)]
 struct Register {
@@ -19,15 +48,6 @@ async fn post(data: web::Data<State<'_>>, info: web::Json<Register>) -> impl Res
     if info.username.len() > 64 || info.password.len() > 64 {
         return HttpResponse::BadRequest().finish();
     }
-
-    let salt = SaltString::generate(&mut OsRng);
-    let password_hash = match data.argon2.hash_password(info.password.as_bytes(), &salt) {
-        Ok(hash) => hash.to_string(),
-        Err(error) => {
-            println!("{}", error);
-            return HttpResponse::InternalServerError().finish();
-        }
-    };
 
     let user_count_result = sqlx::query("SELECT COUNT(*) AS count FROM users WHERE Username = $1")
         .bind(info.username.clone())
@@ -51,21 +71,10 @@ async fn post(data: web::Data<State<'_>>, info: web::Json<Register>) -> impl Res
     };
 
     if user_count == 0 {
-        let insert_request = sqlx::query("INSERT INTO users VALUES ($1, $2, $3);")
-            .bind(Uuid::new_v4().to_string())
-            .bind(info.username.clone())
-            .bind(password_hash)
-            .execute(&data.db_pool)
-            .await;
-
-        match insert_request {
-            Ok(_) => return HttpResponse::Created().finish(),
-            Err(error) => {
-                println!("{}", error);
-                return HttpResponse::InternalServerError().finish();
-            }
+        match create_user(&data.db_pool, &data.argon2, &info.username, &info.password).await {
+            Ok(_uuid) => return HttpResponse::Ok().finish(),
+            Err(error) => return error
         }
-        
     } else {
         return HttpResponse::Conflict().finish();
     }

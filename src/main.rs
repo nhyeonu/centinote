@@ -1,9 +1,10 @@
+mod app;
 mod auth;
 mod state;
 
 use std::path::Path;
-use argon2::Argon2;
 use actix_web::{web, App, HttpServer};
+use argon2::Argon2;
 use sqlx::{postgres::PgPoolOptions, migrate::Migrator};
 use crate::state::State;
 
@@ -41,6 +42,7 @@ async fn main() -> std::io::Result<()> {
                 web::scope("/api")
                     .service(crate::auth::login::post)
                     .service(crate::auth::register::post)
+                    .service(crate::app::journals::post)
             )
             .service(actix_files::Files::new("/", "/usr/local/share/centinote/html").index_file("index.html"))
     }).bind(("0.0.0.0", 8080))?.run().await
