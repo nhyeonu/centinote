@@ -5,12 +5,55 @@
 * {
 	margin: 0;
 	font-family: Sans-serif;
+    box-sizing: border-box;
+}
+
+br {
+    display: none;
 }
 
 h1 {
 	font-size: 30px;
 	color: #3d3d3d;
 	margin-right: auto;
+}
+
+form {
+    border-radius: 5px;
+    border: 1px solid var(--border-color);
+    padding: 8px;
+}
+
+form > *:last-child {
+    margin-bottom: 0;
+}
+
+form > * {
+    margin-bottom: 8px;
+    width: 100%;
+    border-radius: 5px;
+    border: 1px solid var(--border-color); 
+    padding: 2px 5px;
+}
+
+input, textarea {
+    font-size: 16px;
+}
+
+textarea {
+    resize: none;
+    height: 130px;
+}
+
+label {
+    border: 0;
+    clip: rect(0 0 0 0);
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    padding: 0;
+    position: absolute;
+    width: 1px;
 }
 
 .link {
@@ -32,7 +75,6 @@ h1 {
 	align-items: center;
 	padding-left: 12px;
 	padding-right: 12px;
-	box-sizing: border-box;
 }
 
 #topbar .button {
@@ -56,18 +98,19 @@ h1 {
 }
 
 .group {
-	margin: auto;
-	margin-top: 12px;
+	margin: 12px auto;
 	width: 600px;
 	border-left: 3px solid var(--border-color);
 	padding-left: 11px;
 	padding-bottom: 10px;
 }
 
-.item {
-	box-sizing: border-box;
+.group > * {
+	margin: 8px 0;
+}
+
+.group > div {
 	width: 100%;
-	margin-top: 8px;
 	padding: 8px;
 	border-left: 2px solid var(--border-color);
 }
