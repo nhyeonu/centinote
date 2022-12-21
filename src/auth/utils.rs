@@ -1,42 +1,55 @@
 use sqlx::{PgPool, Row};
-use actix_web::{HttpRequest, HttpResponse};
+use actix_web::HttpRequest;
 
-pub async fn verify_session(pool: &PgPool, req: HttpRequest) -> Result<String, HttpResponse> {
-    let auth_cookie = match req.cookie("auth") {
-        Some(value) => value,
-        None => { 
-            return Err(HttpResponse::Unauthorized().finish()); 
-        }
-    };
-
-    let uuid_select_result = sqlx::query("SELECT UserUuid AS uuid FROM sessions WHERE Token = $1")
-        .bind(auth_cookie.value())
+pub async fn verify_token(pool: &PgPool, auth_token: &str) -> Result<String, sqlx::Error> {
+    let user_uuid_select_result = sqlx::query("SELECT UserUuid AS user_uuid FROM sessions WHERE Token = $1")
+        .bind(auth_token)
         .fetch_one(pool)
         .await;
 
-    let uuid_row = match uuid_select_result {
+    let user_uuid_row = match user_uuid_select_result {
         Ok(row) => row,
-        Err(error) => {
-            match error {
-                sqlx::Error::RowNotFound => {
-                    return Err(HttpResponse::Unauthorized().finish()); 
-                },
-                _ => {
-                    println!("{}", error);
-                    return Err(HttpResponse::InternalServerError().finish()); 
-                }
-            }
-        }
+        Err(error) => return Err(error)
     };
 
-    let uuid: String = match uuid_row.try_get("uuid") {
+    let user_uuid: String = match user_uuid_row.try_get("user_uuid") {
         Ok(value) => value,
-        Err(error) => {
-            println!("{}", error);
-            return Err(HttpResponse::InternalServerError().finish());
-        }
+        Err(error) => return Err(error)
     };
 
-    Ok(uuid)
+    Ok(user_uuid)
 }
 
+pub fn get_auth_token(req: &HttpRequest) -> Option<String> {
+    match req.cookie("auth") {
+        Some(cookie) => Some(cookie.value().to_string()),
+        None => None
+    }
+}
+
+macro_rules! verify_request {
+    ($pool:expr, $req:expr) => {
+        { 
+            let auth_token = match utils::get_auth_token($req) {
+                Some(token) => token,
+                None => return HttpResponse::Unauthorized().finish()
+            };
+
+            let user_uuid = match utils::verify_token($pool, &auth_token).await {
+                Ok(value) => value,
+                Err(error) => {
+                    match error {
+                        sqlx::Error::RowNotFound => return HttpResponse::Unauthorized().finish(),
+                        _ => {
+                            println!("{}", error);
+                            return HttpResponse::InternalServerError().finish();
+                        }
+                    }
+                }
+            };
+
+            user_uuid
+        }
+    }
+}
+pub(crate) use verify_request;

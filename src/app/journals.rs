@@ -2,7 +2,7 @@ use serde::Deserialize;
 use actix_web::{web, post, Responder, HttpRequest, HttpResponse};
 use uuid::Uuid;
 use crate::State;
-use crate::auth::utils::verify_session;
+use crate::auth::utils;
 
 #[derive(Deserialize)]
 struct Entry {
@@ -16,11 +16,7 @@ async fn post(data: web::Data<State<'_>>, req: HttpRequest, info: web::Json<Entr
         return HttpResponse::BadRequest().finish();
     }
 
-    let user_uuid = match verify_session(&data.db_pool, req).await {
-        Ok(value) => value,
-        Err(error) => return error
-    };
-
+    let user_uuid = utils::verify_request!(&data.db_pool, &req);
     let entry_uuid = Uuid::new_v4().to_string();
 
     let insert_result = sqlx::query("INSERT INTO journals VALUES ($1, $2, $3, $4)")
