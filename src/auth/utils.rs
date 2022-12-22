@@ -30,12 +30,12 @@ pub fn get_auth_token(req: &HttpRequest) -> Option<String> {
 macro_rules! verify_request {
     ($pool:expr, $req:expr) => {
         { 
-            let auth_token = match utils::get_auth_token($req) {
+            let auth_token = match crate::auth::utils::get_auth_token($req) {
                 Some(token) => token,
                 None => return HttpResponse::Unauthorized().finish()
             };
 
-            let user_uuid = match utils::verify_token($pool, &auth_token).await {
+            let user_uuid = match crate::auth::utils::verify_token($pool, &auth_token).await {
                 Ok(value) => value,
                 Err(error) => {
                     match error {
