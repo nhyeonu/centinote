@@ -17,7 +17,7 @@ async fn post(data: web::Data<State<'_>>, req: HttpRequest, info: web::Json<Jour
         return HttpResponse::BadRequest().finish();
     }
 
-    let user_uuid = utils::verify_request!(&data.db_pool, &req);
+    let user_uuid = utils::verify_request_token!(&data.db_pool, &req);
     let entry_uuid = Uuid::new_v4().to_string();
 
     let insert_result = sqlx::query("INSERT INTO journals VALUES ($1, $2, $3, $4)")
@@ -58,7 +58,7 @@ async fn get(data: web::Data<State<'_>>, req: HttpRequest, path: web::Path<Strin
         }
     };
 
-    let trusted_user_uuid = utils::verify_request!(&data.db_pool, &req);
+    let trusted_user_uuid = utils::verify_request_token!(&data.db_pool, &req);
     let journal_user_uuid: String = match journal_entry_row.try_get("user_uuid") {
         Ok(uuid) => uuid,
         Err(error) => {

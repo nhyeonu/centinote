@@ -27,7 +27,7 @@ pub fn get_auth_token(req: &HttpRequest) -> Option<String> {
     }
 }
 
-macro_rules! verify_request {
+macro_rules! verify_request_token {
     ($pool:expr, $req:expr) => {
         { 
             let auth_token = match crate::utils::get_auth_token($req) {
@@ -52,4 +52,4 @@ macro_rules! verify_request {
         }
     }
 }
-pub(crate) use verify_request;
+pub(crate) use verify_request_token;
