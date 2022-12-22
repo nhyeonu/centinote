@@ -43,6 +43,7 @@ async fn main() -> std::io::Result<()> {
                     .service(crate::auth::login::post)
                     .service(crate::auth::register::post)
                     .service(crate::app::journals::post)
+                    .service(crate::app::journals::get)
             )
             .service(actix_files::Files::new("/", "/usr/local/share/centinote/html").index_file("index.html"))
     }).bind(("0.0.0.0", 8080))?.run().await
