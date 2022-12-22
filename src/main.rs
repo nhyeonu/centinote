@@ -1,6 +1,8 @@
-mod app;
-mod auth;
+mod journals;
+mod login;
+mod register;
 mod state;
+mod utils;
 
 use std::path::Path;
 use actix_web::{web, App, HttpServer};
@@ -40,10 +42,10 @@ async fn main() -> std::io::Result<()> {
             }))
             .service(
                 web::scope("/api")
-                    .service(crate::auth::login::post)
-                    .service(crate::auth::register::post)
-                    .service(crate::app::journals::post)
-                    .service(crate::app::journals::get)
+                    .service(crate::login::post)
+                    .service(crate::register::post)
+                    .service(crate::journals::post)
+                    .service(crate::journals::get)
             )
             .service(actix_files::Files::new("/", "/usr/local/share/centinote/html").index_file("index.html"))
     }).bind(("0.0.0.0", 8080))?.run().await

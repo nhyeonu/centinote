@@ -3,7 +3,7 @@ use actix_web::{get, web, post, Responder, HttpRequest, HttpResponse};
 use sqlx::Row;
 use uuid::Uuid;
 use crate::State;
-use crate::auth::utils;
+use crate::utils;
 
 #[derive(Serialize, Deserialize)]
 struct Journal {
