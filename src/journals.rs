@@ -78,7 +78,7 @@ async fn get(data: web::Data<State<'_>>, req: HttpRequest, path: web::Path<(Stri
         }
     };
 
-    let journal_body: String = match journal_entry_row.try_get("title") {
+    let journal_body: String = match journal_entry_row.try_get("body") {
         Ok(body) => body,
         Err(error) => {
             println!("{}", error);
