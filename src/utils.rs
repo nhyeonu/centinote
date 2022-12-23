@@ -2,7 +2,7 @@ use sqlx::{PgPool, Row};
 use actix_web::HttpRequest;
 
 pub async fn verify_token(pool: &PgPool, auth_token: &str) -> Result<String, sqlx::Error> {
-    let user_uuid_select_result = sqlx::query("SELECT UserUuid AS user_uuid FROM sessions WHERE Token = $1")
+    let user_uuid_select_result = sqlx::query("SELECT user_uuid FROM sessions WHERE token = $1")
         .bind(auth_token)
         .fetch_one(pool)
         .await;

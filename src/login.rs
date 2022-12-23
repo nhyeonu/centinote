@@ -16,7 +16,7 @@ struct Login {
 }
 
 async fn query_user_by_username(db_pool: &PgPool, username: &str) -> Result<(String, String), sqlx::Error> {
-    let password_select_result = sqlx::query("SELECT HashedPassword AS password_hash, Uuid AS uuid FROM users WHERE Username = $1")
+    let password_select_result = sqlx::query("SELECT password_hash, uuid FROM users WHERE username = $1")
         .bind(username)
         .fetch_one(db_pool)
         .await;

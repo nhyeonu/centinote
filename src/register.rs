@@ -49,7 +49,7 @@ async fn post(data: web::Data<State<'_>>, info: web::Json<Register>) -> impl Res
         return HttpResponse::BadRequest().finish();
     }
 
-    let user_count_result = sqlx::query("SELECT COUNT(*) AS count FROM users WHERE Username = $1")
+    let user_count_result = sqlx::query("SELECT COUNT(*) AS count FROM users WHERE username = $1")
         .bind(info.username.clone())
         .fetch_one(&data.db_pool)
         .await;

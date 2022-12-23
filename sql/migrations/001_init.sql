@@ -1,20 +1,20 @@
 CREATE TABLE users ( 
-    Uuid CHAR(36) NOT NULL,
-	Username VARCHAR(64) NOT NULL,
-	HashedPassword CHAR(96) NOT NULL,
-    PRIMARY KEY (Uuid)
+    uuid CHAR(36) NOT NULL,
+	username VARCHAR(64) NOT NULL,
+	password_hash CHAR(96) NOT NULL,
+    PRIMARY KEY (uuid)
 );
 
 CREATE TABLE sessions (
-    UserUuid CHAR(36) NOT NULL,
-    Token CHAR(64) NOT NULL,
-    FOREIGN KEY (UserUuid) REFERENCES users(Uuid)
+    user_uuid CHAR(36) NOT NULL,
+    token CHAR(64) NOT NULL,
+    FOREIGN KEY (user_uuid) REFERENCES users(uuid)
 );
 
 CREATE TABLE journals (
-    Uuid CHAR(36) NOT NULL,
-    UserUuid CHAR(36) NOT NULL,
-    Title TEXT NOT NULL,
-    Body TEXT NOT NULL,
-    FOREIGN KEY (UserUuid) REFERENCES users(Uuid)
+    uuid CHAR(36) NOT NULL,
+    user_uuid CHAR(36) NOT NULL,
+    title TEXT NOT NULL,
+    body TEXT NOT NULL,
+    FOREIGN KEY (user_uuid) REFERENCES users(uuid)
 );

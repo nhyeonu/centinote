@@ -51,7 +51,7 @@ async fn get(data: web::Data<State<'_>>, req: HttpRequest, path: web::Path<(Stri
         return HttpResponse::Unauthorized().finish();
     }
 
-    let journal_entry_query_result = sqlx::query("SELECT UserUuid AS user_uuid, Title AS title, Body AS body FROM journals WHERE Uuid = $1 AND UserUuid = $2")
+    let journal_entry_query_result = sqlx::query("SELECT user_uuid, title, body FROM journals WHERE uuid = $1 AND user_uuid = $2")
         .bind(journal_entry_uuid)
         .bind(request_user_uuid)
         .fetch_one(&data.db_pool)
