@@ -69,6 +69,7 @@ async fn create_access_token(db_pool: &PgPool, user_uuid: String) -> Result<Cook
             Ok(
                 Cookie::build("auth", token.clone())
                 .http_only(true)
+                .path("/")
                 .same_site(SameSite::Strict)
                 .finish()
             )
@@ -97,8 +98,14 @@ async fn post(data: web::Data<State<'_>>, info: web::Json<Login>) -> impl Respon
     match verify_password(&data.argon2, &info.password, &password_hash).await {
         Ok(_) => {
             // Password is correct. Trying to create an access token.
-            match create_access_token(&data.db_pool, user_uuid).await {
-                Ok(cookie) => return HttpResponse::Ok().cookie(cookie).finish(),
+            match create_access_token(&data.db_pool, user_uuid.clone()).await {
+                Ok(token) => return HttpResponse::Ok()
+                    .cookie(token)
+                    .cookie(Cookie::build("user_uuid", user_uuid)
+                            .same_site(SameSite::Strict)
+                            .path("/")
+                            .finish())
+                    .finish(),
                 Err(error) => {
                     println!("{}", error);
                     return HttpResponse::InternalServerError().finish();
