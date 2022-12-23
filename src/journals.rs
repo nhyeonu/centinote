@@ -12,29 +12,45 @@ struct Journal {
 }
 
 #[post("/users/{user_uuid}/journals")]
-async fn post(data: web::Data<State<'_>>, req: HttpRequest, info: web::Json<Journal>, path: web::Path<String>) -> impl Responder {
+async fn post(
+    data: web::Data<State<'_>>,
+    req: HttpRequest,
+    info: web::Json<Journal>,
+    path: web::Path<String>) -> impl Responder 
+{
     if info.title.len() > 128 || info.body.len() > 2048 {
         return HttpResponse::BadRequest().finish();
     }
 
-    let request_user_uuid = path.into_inner();
-    let trusted_user_uuid = utils::verify_request_token!(&data.db_pool, &req);
+    let user_uuid = {
+        let request_user_uuid = path.into_inner();
+        let trusted_user_uuid = utils::verify_request_token!(&data.db_pool, &req);
 
-    if request_user_uuid != trusted_user_uuid {
-        return HttpResponse::Unauthorized().finish();
-    }
+        if request_user_uuid != trusted_user_uuid {
+            return HttpResponse::Unauthorized().finish();
+        }
+
+        request_user_uuid
+    };
 
     let entry_uuid = Uuid::new_v4().to_string();
     let insert_result = sqlx::query("INSERT INTO journals VALUES ($1, $2, $3, $4)")
         .bind(&entry_uuid)
-        .bind(&request_user_uuid)
+        .bind(&user_uuid)
         .bind(&info.title)
         .bind(&info.body)
         .execute(&data.db_pool)
         .await;
 
+    let entry_path = format!("/api/users/{}/journals/{}", user_uuid, entry_uuid);
+
     match insert_result {
-        Ok(_) => return HttpResponse::Found().insert_header(("Location", format!("/api/users/{request_user_uuid}/journals/{entry_uuid}"))).finish(),
+        Ok(_) => { 
+            let response = HttpResponse::Found()
+                .insert_header(("Location", entry_path))
+                .finish();
+            return response;
+        },
         Err(error) => {
             println!("{}", error);
             return HttpResponse::InternalServerError().finish();
@@ -43,7 +59,11 @@ async fn post(data: web::Data<State<'_>>, req: HttpRequest, info: web::Json<Jour
 }
 
 #[get("/users/{user_uuid}/journals/{entry_uuid}")]
-async fn get(data: web::Data<State<'_>>, req: HttpRequest, path: web::Path<(String, String)>) -> impl Responder {
+async fn get(
+    data: web::Data<State<'_>>,
+    req: HttpRequest,
+    path: web::Path<(String, String)>) -> impl Responder 
+{
     let trusted_user_uuid = utils::verify_request_token!(&data.db_pool, &req);
     let (request_user_uuid, journal_entry_uuid) = path.into_inner();
 
@@ -51,7 +71,8 @@ async fn get(data: web::Data<State<'_>>, req: HttpRequest, path: web::Path<(Stri
         return HttpResponse::Unauthorized().finish();
     }
 
-    let journal_entry_query_result = sqlx::query("SELECT user_uuid, title, body FROM journals WHERE uuid = $1 AND user_uuid = $2")
+    let journal_entry_query_result = 
+        sqlx::query("SELECT title, body FROM journals WHERE uuid = $1 AND user_uuid = $2")
         .bind(journal_entry_uuid)
         .bind(request_user_uuid)
         .fetch_one(&data.db_pool)

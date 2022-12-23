@@ -15,8 +15,12 @@ struct Login {
     password: String,
 }
 
-async fn query_user_by_username(db_pool: &PgPool, username: &str) -> Result<(String, String), sqlx::Error> {
-    let password_select_result = sqlx::query("SELECT password_hash, uuid FROM users WHERE username = $1")
+async fn query_user_by_username(
+    db_pool: &PgPool,
+    username: &str) -> Result<(String, String), sqlx::Error> 
+{
+    let password_select_result = 
+        sqlx::query("SELECT password_hash, uuid FROM users WHERE username = $1")
         .bind(username)
         .fetch_one(db_pool)
         .await;
@@ -39,7 +43,11 @@ async fn query_user_by_username(db_pool: &PgPool, username: &str) -> Result<(Str
     Ok((user_uuid, password_hash))
 }
 
-async fn verify_password(argon2: &Argon2<'_>, password: &str, password_hash: &str) -> Result<(), password_hash::errors::Error> {
+async fn verify_password(
+    argon2: &Argon2<'_>,
+    password: &str,
+    password_hash: &str) -> Result<(), password_hash::errors::Error> 
+{
     let parsed_hash = match PasswordHash::new(password_hash) {
         Ok(parsed) => parsed,
         Err(error) => return Err(error)
@@ -51,7 +59,10 @@ async fn verify_password(argon2: &Argon2<'_>, password: &str, password_hash: &st
     }
 }
 
-async fn create_access_token(db_pool: &PgPool, user_uuid: String) -> Result<Cookie, sqlx::Error> {
+async fn create_access_token(
+    db_pool: &PgPool,
+    user_uuid: String) -> Result<Cookie, sqlx::Error> 
+{
     let token: String = thread_rng()
         .sample_iter(&Alphanumeric)
         .take(64)
@@ -79,8 +90,13 @@ async fn create_access_token(db_pool: &PgPool, user_uuid: String) -> Result<Cook
 }
 
 #[post("/login")]
-async fn post(data: web::Data<State<'_>>, info: web::Json<Login>) -> impl Responder {
-    let (user_uuid, password_hash) = match query_user_by_username(&data.db_pool, &info.username).await {
+async fn post(
+    data: web::Data<State<'_>>,
+    info: web::Json<Login>) -> impl Responder 
+{
+
+    let user_query_result = query_user_by_username(&data.db_pool, &info.username).await;
+    let (user_uuid, password_hash) = match user_query_result {
         Ok(values) => values,
         Err(error) => {
             match error {

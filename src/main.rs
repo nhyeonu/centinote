@@ -12,8 +12,17 @@ use crate::state::State;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
+    //TODO: Look up resources at relative path from the executable.
+    let migrations_dir = "/usr/local/share/centinote/sql/migrations";
+    let html_dir = "/usr/local/share/centinote/html";
+
     println!("Connecting to the database...");
-    let pool = match PgPoolOptions::new().max_connections(5).connect("postgres://postgres:insecure@db/centinote").await {
+    let pool_connect_result = PgPoolOptions::new()
+        .max_connections(5)
+        .connect("postgres://postgres:insecure@db/centinote")
+        .await;
+
+    let pool = match pool_connect_result {
         Ok(pool) => {
             println!("Successfully connected to the database"); 
             pool 
@@ -21,8 +30,8 @@ async fn main() -> std::io::Result<()> {
         Err(error) => panic!("{}", error)
     };
 
-    //TODO: Look up sql scripts at relative path from the executable.
-    let migrator = match Migrator::new(Path::new("/usr/local/share/centinote/sql/migrations")).await {
+    let migrator_create_result = Migrator::new(Path::new(migrations_dir)).await;
+    let migrator = match migrator_create_result {
         Ok(migrator) => migrator,
         Err(error) => panic!("{}", error)
     };
@@ -47,6 +56,6 @@ async fn main() -> std::io::Result<()> {
                     .service(crate::journals::post)
                     .service(crate::journals::get)
             )
-            .service(actix_files::Files::new("/", "/usr/local/share/centinote/html").index_file("index.html"))
+            .service(actix_files::Files::new("/", html_dir).index_file("index.html"))
     }).bind(("0.0.0.0", 8080))?.run().await
 }

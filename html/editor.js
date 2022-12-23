@@ -4,8 +4,8 @@ const url_parameters = new URLSearchParams(query_string);
 const entry_uuid = url_parameters.get("entry-uuid");
 const form = document.getElementById("editor-form");
 
-const user_uuid = document.cookie.split("; ").find((row) => row.startsWith("user_uuid="))?.split("=")[1];
-alert(document.cookie);
+const user_uuid = 
+    document.cookie.split("; ").find((row) => row.startsWith("user_uuid="))?.split("=")[1];
 
 if(entry_uuid == null) {
     form.setAttribute("method", "POST");
