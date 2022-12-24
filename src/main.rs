@@ -53,8 +53,9 @@ async fn main() -> std::io::Result<()> {
                 web::scope("/api")
                     .service(crate::login::post)
                     .service(crate::register::post)
-                    .service(crate::journals::post)
+                    .service(crate::journals::get_list)
                     .service(crate::journals::get)
+                    .service(crate::journals::post)
             )
             .service(actix_files::Files::new("/", html_dir).index_file("index.html"))
     }).bind(("0.0.0.0", 8080))?.run().await

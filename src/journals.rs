@@ -11,6 +11,73 @@ struct Journal {
     body: String,
 }
 
+#[derive(Serialize)]
+struct JournalList {
+    uuids: Vec<String>,
+}
+
+#[get("/users/{user_uuid}/journals")]
+async fn get_list(
+    data: web::Data<State<'_>>,
+    path: web::Path<String>,
+    req: HttpRequest) -> impl Responder
+{
+    let user_uuid = {
+        let request_user_uuid = path.into_inner();
+        let trusted_user_uuid = utils::verify_request_token!(&data.db_pool, &req);
+
+        if request_user_uuid != trusted_user_uuid {
+            return HttpResponse::Unauthorized().finish();
+        }
+
+        request_user_uuid
+    };
+
+    let query_result = sqlx::query("SELECT uuid FROM journals WHERE user_uuid = $1")
+        .bind(&user_uuid)
+        .fetch_all(&data.db_pool)
+        .await;
+
+    let rows = match query_result {
+        Ok(rows) => rows,
+        Err(error) => {
+            match error {
+                sqlx::Error::RowNotFound => {
+                    return web::Json(JournalList {
+                        uuids: Vec::new(),
+                    }).respond_to(&req).map_into_boxed_body()
+                },
+                _ => {
+                    println!("{}", error);
+                    return HttpResponse::InternalServerError().finish();
+                }
+            }
+        }
+    };
+
+    let uuids = {
+        let uuid_results: Vec<Result<String, sqlx::Error>> 
+            = rows.iter().map(|row| row.try_get("uuid")).collect();
+
+        let uuids_result: Result<Vec<String>, sqlx::Error> 
+            = uuid_results.into_iter().collect();
+
+        let uuids: Vec<String> = match uuids_result {
+            Ok(vector) => vector,
+            Err(error) => {
+                println!("{}", error);
+                return HttpResponse::InternalServerError().finish();
+            }
+        };
+
+        uuids
+    };
+
+    web::Json(JournalList {
+        uuids: uuids,
+    }).respond_to(&req).map_into_boxed_body()
+}
+
 #[post("/users/{user_uuid}/journals")]
 async fn post(
     data: web::Data<State<'_>>,
