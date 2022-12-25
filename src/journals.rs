@@ -1,6 +1,6 @@
 use serde::{Serialize, Deserialize};
 use actix_web::{get, web, post, Responder, HttpRequest, HttpResponse};
-use sqlx::{Row, types::chrono::Local};
+use sqlx::{Row, types::chrono::{DateTime, Utc}};
 use uuid::Uuid;
 use crate::State;
 use crate::utils;
@@ -101,11 +101,11 @@ async fn post(
     };
 
     let entry_uuid = Uuid::new_v4().to_string();
-    let current_timestamp = Local::now();
+    let current_timestamp = Utc::now();
     let insert_result = sqlx::query("INSERT INTO journals VALUES ($1, $2, $3, $4, $5)")
         .bind(&entry_uuid)
         .bind(&user_uuid)
-        .bind(&current_timestamp.to_rfc3339())
+        .bind(&current_timestamp)
         .bind(&info.title)
         .bind(&info.body)
         .execute(&data.db_pool)
@@ -167,8 +167,8 @@ async fn get(
         }
     };
 
-    let created: String = match journal_entry_row.try_get("created_datetime") {
-        Ok(datetime) => datetime,
+    let created: DateTime<Utc> = match journal_entry_row.try_get("created") {
+        Ok(timestamp) => timestamp,
         Err(error) => {
             println!("{}", error);
             return HttpResponse::InternalServerError().finish();
@@ -192,7 +192,7 @@ async fn get(
     };
 
     web::Json(JournalData {
-        created: created,
+        created: created.to_rfc3339(),
         title: journal_title,
         body: journal_body
     }).respond_to(&req).map_into_boxed_body()
