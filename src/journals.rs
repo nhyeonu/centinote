@@ -1,15 +1,9 @@
 use serde::{Serialize, Deserialize};
 use actix_web::{get, web, post, Responder, HttpRequest, HttpResponse};
-use sqlx::Row;
+use sqlx::{Row, types::chrono::Local};
 use uuid::Uuid;
 use crate::State;
 use crate::utils;
-
-#[derive(Serialize, Deserialize)]
-struct Journal {
-    title: String,
-    body: String,
-}
 
 #[derive(Serialize)]
 struct JournalList {
@@ -78,11 +72,17 @@ async fn get_list(
     }).respond_to(&req).map_into_boxed_body()
 }
 
+#[derive(Deserialize)]
+struct JournalCreate {
+    title: String,
+    body: String,
+}
+
 #[post("/users/{user_uuid}/journals")]
 async fn post(
     data: web::Data<State<'_>>,
     req: HttpRequest,
-    info: web::Json<Journal>,
+    info: web::Json<JournalCreate>,
     path: web::Path<String>) -> impl Responder 
 {
     if info.title.len() > 128 || info.body.len() > 2048 {
@@ -101,9 +101,11 @@ async fn post(
     };
 
     let entry_uuid = Uuid::new_v4().to_string();
-    let insert_result = sqlx::query("INSERT INTO journals VALUES ($1, $2, $3, $4)")
+    let current_timestamp = Local::now();
+    let insert_result = sqlx::query("INSERT INTO journals VALUES ($1, $2, $3, $4, $5)")
         .bind(&entry_uuid)
         .bind(&user_uuid)
+        .bind(&current_timestamp.to_rfc3339())
         .bind(&info.title)
         .bind(&info.body)
         .execute(&data.db_pool)
@@ -125,6 +127,13 @@ async fn post(
     }
 }
 
+#[derive(Serialize)]
+struct JournalData {
+    created: String,
+    title: String,
+    body: String,
+}
+
 #[get("/users/{user_uuid}/journals/{entry_uuid}")]
 async fn get(
     data: web::Data<State<'_>>,
@@ -139,7 +148,7 @@ async fn get(
     }
 
     let journal_entry_query_result = 
-        sqlx::query("SELECT title, body FROM journals WHERE uuid = $1 AND user_uuid = $2")
+        sqlx::query("SELECT * FROM journals WHERE uuid = $1 AND user_uuid = $2")
         .bind(journal_entry_uuid)
         .bind(request_user_uuid)
         .fetch_one(&data.db_pool)
@@ -155,6 +164,14 @@ async fn get(
                     return HttpResponse::InternalServerError().finish();
                 }
             }
+        }
+    };
+
+    let created: String = match journal_entry_row.try_get("created_datetime") {
+        Ok(datetime) => datetime,
+        Err(error) => {
+            println!("{}", error);
+            return HttpResponse::InternalServerError().finish();
         }
     };
 
@@ -174,7 +191,8 @@ async fn get(
         }
     };
 
-    web::Json(Journal {
+    web::Json(JournalData {
+        created: created,
         title: journal_title,
         body: journal_body
     }).respond_to(&req).map_into_boxed_body()
