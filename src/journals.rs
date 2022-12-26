@@ -27,7 +27,8 @@ async fn get_list(
         request_user_uuid
     };
 
-    let query_result = sqlx::query("SELECT uuid FROM journals WHERE user_uuid = $1")
+    let query_result = 
+        sqlx::query("SELECT uuid FROM journals WHERE user_uuid = $1 ORDER BY created DESC")
         .bind(&user_uuid)
         .fetch_all(&data.db_pool)
         .await;
