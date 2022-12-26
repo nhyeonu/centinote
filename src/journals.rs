@@ -115,7 +115,7 @@ async fn post(
 
     match insert_result {
         Ok(_) => { 
-            let response = HttpResponse::Found()
+            let response = HttpResponse::Created()
                 .insert_header(("Location", entry_path))
                 .finish();
             return response;
