@@ -14,7 +14,8 @@ CREATE TABLE sessions (
 CREATE TABLE journals (
     uuid CHAR(36) NOT NULL,
     user_uuid CHAR(36) NOT NULL,
-    created TIMESTAMP WITH TIME ZONE NOT NULL,
+    created TIMESTAMP NOT NULL,
+    timezone_offset INTEGER NOT NULL,
     title TEXT NOT NULL,
     body TEXT NOT NULL,
     FOREIGN KEY (user_uuid) REFERENCES users(uuid)

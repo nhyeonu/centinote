@@ -1,6 +1,6 @@
 use serde::{Serialize, Deserialize};
 use actix_web::{get, web, post, Responder, HttpRequest, HttpResponse};
-use sqlx::{Row, types::chrono::{DateTime, Utc}};
+use sqlx::{Row, types::chrono::{TimeZone, FixedOffset, NaiveDateTime, Utc}};
 use uuid::Uuid;
 use crate::State;
 use crate::utils;
@@ -74,6 +74,7 @@ async fn get_list(
 
 #[derive(Deserialize)]
 struct JournalCreate {
+    timezone_offset: i32,
     title: String,
     body: String,
 }
@@ -89,6 +90,10 @@ async fn post(
         return HttpResponse::BadRequest().finish();
     }
 
+    if info.timezone_offset < -720 || info.timezone_offset > 840 {
+        return HttpResponse::BadRequest().finish();
+    }
+
     let user_uuid = {
         let request_user_uuid = path.into_inner();
         let trusted_user_uuid = utils::verify_request_token!(&data.db_pool, &req);
@@ -101,11 +106,12 @@ async fn post(
     };
 
     let entry_uuid = Uuid::new_v4().to_string();
-    let current_timestamp = Utc::now();
-    let insert_result = sqlx::query("INSERT INTO journals VALUES ($1, $2, $3, $4, $5)")
+    let current_timestamp = Utc::now().naive_utc();
+    let insert_result = sqlx::query("INSERT INTO journals VALUES ($1, $2, $3, $4, $5, $6)")
         .bind(&entry_uuid)
         .bind(&user_uuid)
         .bind(&current_timestamp)
+        .bind(&info.timezone_offset)
         .bind(&info.title)
         .bind(&info.body)
         .execute(&data.db_pool)
@@ -167,12 +173,29 @@ async fn get(
         }
     };
 
-    let created: DateTime<Utc> = match journal_entry_row.try_get("created") {
-        Ok(timestamp) => timestamp,
-        Err(error) => {
-            println!("{}", error);
-            return HttpResponse::InternalServerError().finish();
-        }
+    let created = {
+        let created_utc: NaiveDateTime = match journal_entry_row.try_get("created") {
+            Ok(timestamp) => timestamp,
+            Err(error) => {
+                println!("{}", error);
+                return HttpResponse::InternalServerError().finish();
+            }
+        };
+
+        let timezone_offset_minute: i32 = match journal_entry_row.try_get("timezone_offset") {
+            Ok(offset) => offset,
+            Err(error) => {
+                println!("{}", error);
+                return HttpResponse::InternalServerError().finish();
+            }
+        };
+
+        let timezone_offset = match FixedOffset::east_opt(timezone_offset_minute * 60) {
+            Some(value) => value,
+            None => return HttpResponse::InternalServerError().finish()
+        };
+
+        timezone_offset.from_utc_datetime(&created_utc)
     };
 
     let journal_title: String = match journal_entry_row.try_get("title") {
