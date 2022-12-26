@@ -9,14 +9,19 @@ function submitForm(form) {
 
     let inputs = form.getElementsByTagName("input");
     for (const input of inputs) {
-        data[input.getAttribute("name")] = input.value;
+        const data_type = input.getAttribute("data-type");
+        if(data_type == "integer") {
+            data[input.getAttribute("name")] = parseInt(input.value, 10);
+        } else {
+            data[input.getAttribute("name")] = input.value;
+        }
     }
 
     let textareas = form.getElementsByTagName("textarea");
     for (const textarea of textareas) {
         data[textarea.getAttribute("name")] = textarea.value;
     }
-    
+
     xhr.send(JSON.stringify(data));
 }
 
@@ -43,4 +48,7 @@ if(editor_form !== null) {
         editor_form.setAttribute("method", "POST");
         editor_form.setAttribute("action", "/api/users/" + user_uuid + "/journals");
     }
+
+    const timezone_offset = document.getElementById("timezone_offset");
+    timezone_offset.setAttribute("value", new Date().getTimezoneOffset());
 }
