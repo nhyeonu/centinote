@@ -190,7 +190,7 @@ async fn get(
             }
         };
 
-        let timezone_offset = match FixedOffset::east_opt(timezone_offset_minute * 60) {
+        let timezone_offset = match FixedOffset::west_opt(timezone_offset_minute * 60) {
             Some(value) => value,
             None => return HttpResponse::InternalServerError().finish()
         };
