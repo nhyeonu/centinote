@@ -5,7 +5,7 @@
         <link rel="stylesheet" href="styles.css">
     </head>
     <body>
-        <form action="/api/register" method="POST" onsubmit="submitForm(this); return false;">
+        <form action="/api/register" method="POST" onsubmit="submitForm(this); return false;" data-redirect="/login.html">
             <label for="username">Username: </label>
             <input type="text" id="username" name="username" placeholder="Username" required>
             <label for="password">Password: </label>

@@ -97,7 +97,7 @@ label {
 	text-decoration: none;
 }
 
-#content {
+.content {
     width: 600px;
     margin: 12px auto;
 }
