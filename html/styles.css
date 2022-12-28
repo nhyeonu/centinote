@@ -6,6 +6,7 @@
 	margin: 0;
 	font-family: Sans-serif;
     box-sizing: border-box;
+    word-break: keep-all;
 }
 
 br {
