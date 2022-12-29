@@ -26,7 +26,7 @@ p {
 form {
     border-radius: 5px;
     border: 1px solid var(--border-color);
-    padding: 8px;
+    padding: 12px;
 }
 
 form > *:last-child {
@@ -36,29 +36,35 @@ form > *:last-child {
 form > * {
     margin-bottom: 8px;
     width: 100%;
-    border-radius: 5px;
-    border: 1px solid var(--border-color); 
-    padding: 2px 5px;
 }
 
 input, textarea {
-    font-size: 16px;
+    font-size: 18px;
+}
+
+input {
+    border: none;
+    border-bottom: 1px solid var(--border-color); 
+    padding: 3px;
+}
+
+input:focus {
+    outline: none;
 }
 
 textarea {
     resize: none;
     height: 180px;
+    border-radius: 3px;
+    border: 1px solid var(--border-color); 
 }
 
 label {
-    border: 0;
-    clip: rect(0 0 0 0);
-    height: 1px;
-    margin: -1px;
-    overflow: hidden;
-    padding: 0;
-    position: absolute;
-    width: 1px;
+    display: block;
+    padding-left: 2px;
+    margin-bottom: 4px;
+    font-size: 16px;
+    color: #3b3b3b;
 }
 
 .link {
@@ -108,7 +114,7 @@ label {
 }
 
 .center {
-    width: 400px;
+    width: 450px;
     position: absolute;
     top: 35%;
     left: 50%;
