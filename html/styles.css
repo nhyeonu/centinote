@@ -48,7 +48,20 @@ input {
     padding: 3px;
 }
 
-input:focus {
+input[type=submit] {
+    border: 1px solid var(--border-color); 
+    border-radius: 3px;
+    margin-top: 5px;
+    font-size: 16px;
+    height: 35px;
+	background-color: #ededed;
+}
+
+input[type=submit]:hover {
+    background-color: #dedede;
+}
+
+input[type=text]:focus, input[type=password]:focus {
     outline: none;
 }
 
