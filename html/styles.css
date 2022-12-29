@@ -34,14 +34,11 @@ form > * {
     width: 100%;
 }
 
-input, textarea {
-    font-size: 18px;
-}
-
 input {
     border: none;
     border-bottom: 1px solid var(--border-color); 
     padding: 3px;
+    font-size: 18px;
 }
 
 input[type=submit] {
@@ -70,6 +67,8 @@ textarea {
     height: 180px;
     border-radius: 3px;
     border: 1px solid var(--border-color); 
+    font-size: 16px;
+    padding: 5px;
 }
 
 label {
