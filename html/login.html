@@ -6,12 +6,15 @@
     </head>
     <body>
         <div class="center">
+            <div id="warning-container" class="warning" hidden>
+                <p id="warning-paragraph"></p>
+            </div>
             <form onsubmit="submitLogin(); return false;">
                 <h1 class="center-text">Centinote</h1>
                 <label for="username">Username: </label>
-                <input type="text" id="username" placeholder="Username..." required>
+                <input type="text" id="username" placeholder="Username...">
                 <label for="password">Password: </label>
-                <input type="password" id="password" placeholder="Password..." required>
+                <input type="password" id="password" placeholder="Password...">
                 <button type="submit">Login</button>
             </form>
             <p class="center-text"><a href="/register.html">Register</a> if you do not have an account</p>

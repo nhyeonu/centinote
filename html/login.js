@@ -1,3 +1,13 @@
+function setFormWarning(description, focus_element) {
+    const container = document.getElementById("warning-container");
+    const paragraph = document.getElementById("warning-paragraph");
+
+    container.hidden = false;
+    paragraph.innerHTML = description;
+
+    focus_element.focus();
+}
+
 function submitLogin() {
     let xhr = new XMLHttpRequest();
     xhr.open("POST", "/api/login");
@@ -10,9 +20,22 @@ function submitLogin() {
         }
     };
 
+    const username_input_element = document.getElementById("username");
+    const password_input_element = document.getElementById("password");
+
     const data = {};
-    data.username = document.getElementById("username").value;
-    data.password = document.getElementById("password").value;
+    data.username = username_input_element.value;
+    data.password = password_input_element.value;
+
+    if(data.username.length == 0) {
+        setFormWarning("Username is required!", username_input_element);
+        return;
+    }
+
+    if(data.password.length == 0) {
+        setFormWarning("Password is required!", password_input_element);
+        return;
+    }
 
     xhr.send(JSON.stringify(data));
 }
