@@ -9,10 +9,6 @@
     word-break: keep-all;
 }
 
-br {
-    display: none;
-}
-
 h1 {
 	font-size: 30px;
 	color: #3d3d3d;
