@@ -136,3 +136,23 @@ label {
 	padding: 8px;
 	border-left: 2px solid var(--border-color);
 }
+
+[hidden] {
+    display: none !important;
+}
+
+.warning {
+    display: flex;
+    align-items: center;
+    border: 2px solid rgba(255, 0, 0, 0.5);
+    background-color: rgba(255, 0, 0, 0.2);
+    border-radius: 5px;
+    margin: 8px 0;
+    height: 50px;
+}
+
+.warning p {
+    color: rgba(200, 0, 0, 1);
+    width: 100%;
+    text-align: center;
+}
