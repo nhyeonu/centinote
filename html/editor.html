@@ -15,15 +15,14 @@
             </a>
 		</div>
         <div class="content">
-            <form id="editor-form" onsubmit="submitForm(this); return false;" data-redirect="/timeline.html">
-                <input id="timezone_offset" type="hidden" name="timezone_offset" data-type="integer">
+            <form id="editor-form" onsubmit="submitJson(this); return false;">
                 <label for="title">Title</label>
-                <input id="title" name="title" type="text">
+                <input id="title" type="text">
                 <label for="body">Entry</label>
-                <textarea id="body" name="body"></textarea>
+                <textarea id="body"></textarea>
                 <input type="submit" value="Save"></input>
             </form>
         </div>
-        <script src="script.js"></script>
+        <script src="editor.js"></script>
 	</body>
 </html>
