@@ -59,6 +59,6 @@ async fn main() -> std::io::Result<()> {
                     .service(crate::users::get)
                     .service(crate::users::post)
             )
-            .service(actix_files::Files::new("/", html_dir).index_file("index.html"))
+            .service(actix_files::Files::new("/", html_dir).index_file("redirect.html"))
     }).bind(("0.0.0.0", 8080))?.run().await
 }
