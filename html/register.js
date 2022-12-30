@@ -10,7 +10,7 @@ function setFormWarning(description, focus_element) {
 
 function submitRegister() {
     let xhr = new XMLHttpRequest();
-    xhr.open("POST", "/api/register");
+    xhr.open("POST", "/api/users");
     xhr.setRequestHeader("Accept", "application/json");
     xhr.setRequestHeader("Content-Type", "application/json");
 
