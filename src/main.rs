@@ -1,6 +1,5 @@
 mod journals;
 mod login;
-mod register;
 mod state;
 mod utils;
 mod users;
@@ -53,12 +52,12 @@ async fn main() -> std::io::Result<()> {
             .service(
                 web::scope("/api")
                     .service(crate::login::post)
-                    .service(crate::register::post)
                     .service(crate::journals::get_list)
                     .service(crate::journals::get)
                     .service(crate::journals::post)
                     .service(crate::journals::patch)
                     .service(crate::users::get)
+                    .service(crate::users::post)
             )
             .service(actix_files::Files::new("/", html_dir).index_file("index.html"))
     }).bind(("0.0.0.0", 8080))?.run().await
