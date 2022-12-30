@@ -1,5 +1,5 @@
 use serde::{Serialize, Deserialize};
-use actix_web::{get, web, post, Responder, HttpRequest, HttpResponse};
+use actix_web::{get, post, patch, web, Responder, HttpRequest, HttpResponse};
 use sqlx::{PgPool, Row, types::chrono::{DateTime, TimeZone, FixedOffset, NaiveDateTime, Utc}};
 use uuid::Uuid;
 use crate::State;
@@ -13,6 +13,12 @@ struct JournalList {
 #[derive(Deserialize)]
 struct JournalCreate {
     timezone_offset: i32,
+    title: String,
+    body: String,
+}
+
+#[derive(Deserialize)]
+struct JournalUpdate {
     title: String,
     body: String,
 }
@@ -238,4 +244,63 @@ async fn get(
     };
 
     web::Json(journal_data).respond_to(&req).map_into_boxed_body()
+}
+
+#[patch("/users/{user_uuid}/journals/{entry_uuid}")]
+async fn patch(
+    data: web::Data<State<'_>>,
+    req: HttpRequest,
+    info: web::Json<JournalUpdate>,
+    path: web::Path<(String, String)>) -> impl Responder 
+{
+    let trusted_user_uuid = utils::verify_request_token!(&data.db_pool, &req);
+    let (request_user_uuid, entry_uuid) = path.into_inner();
+
+    if request_user_uuid != trusted_user_uuid {
+        return HttpResponse::Unauthorized().finish();
+    }
+
+    let select_result = 
+        sqlx::query("SELECT COUNT(*) AS count FROM journals WHERE uuid = $1 AND user_uuid = $2")
+        .bind(&entry_uuid)
+        .bind(&trusted_user_uuid)
+        .fetch_one(&data.db_pool)
+        .await;
+
+    let count_row = match select_result {
+        Ok(row) => row,
+        Err(error) => {
+            println!("{}", error);
+            return HttpResponse::InternalServerError().finish();
+        }
+    };
+
+    let count: i64 = match count_row.try_get("count") {
+        Ok(value) => value,
+        Err(error) => {
+            println!("{}", error);
+            return HttpResponse::InternalServerError().finish();
+        }
+    };
+
+    if count == 0 {
+        return HttpResponse::NotFound().finish();
+    }
+
+    let update_result = 
+        sqlx::query("UPDATE journals SET title = $1, body = $2 WHERE uuid = $3 AND user_uuid = $4")
+        .bind(&info.title)
+        .bind(&info.body)
+        .bind(&entry_uuid)
+        .bind(&trusted_user_uuid)
+        .execute(&data.db_pool)
+        .await;
+
+    match update_result {
+        Ok(_) => return HttpResponse::Ok().finish(),
+        Err(error) => {
+            println!("{}", error);
+            return HttpResponse::InternalServerError().finish();
+        }
+    }
 }
