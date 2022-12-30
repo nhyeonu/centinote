@@ -3,6 +3,7 @@ mod login;
 mod register;
 mod state;
 mod utils;
+mod users;
 
 use std::path::Path;
 use actix_web::{web, App, HttpServer};
@@ -57,6 +58,7 @@ async fn main() -> std::io::Result<()> {
                     .service(crate::journals::get)
                     .service(crate::journals::post)
                     .service(crate::journals::patch)
+                    .service(crate::users::get)
             )
             .service(actix_files::Files::new("/", html_dir).index_file("index.html"))
     }).bind(("0.0.0.0", 8080))?.run().await
