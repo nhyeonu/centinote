@@ -1,0 +1,31 @@
+#timeline {
+    width: 600px;
+    margin: 12px auto;
+}
+
+.entry-link {
+	color: black;
+	text-decoration: none;
+}
+
+.entry-link:hover {
+	text-decoration: underline;
+}
+
+.day {
+	margin: 12px 0;
+	border-left: 3px solid var(--border-color);
+	padding-left: 11px;
+	padding-bottom: 10px;
+}
+
+.entry {
+    margin-top: 8px;
+	width: 100%;
+	padding: 8px;
+	border-left: 2px solid var(--border-color);
+}
+
+.entry h3 {
+    margin-bottom: 4px;
+}

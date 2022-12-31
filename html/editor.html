@@ -2,7 +2,10 @@
 <html>
 	<head>
 		<title>Editor - Centinote</title>
-		<link rel="stylesheet" href="styles.css">
+		<link rel="stylesheet" href="styles/global.css">
+		<link rel="stylesheet" href="styles/topbar.css">
+		<link rel="stylesheet" href="styles/form.css">
+		<link rel="stylesheet" href="styles/editor.css">
 	</head>
 	<body>
 		<div id="topbar">
@@ -14,7 +17,7 @@
                 <img src="icons/user-light.svg"></img>
             </a>
 		</div>
-        <div class="content">
+        <div id="editor">
             <form id="editor-form" onsubmit="submitJson(this); return false;">
                 <label for="title">Title</label>
                 <input id="title" type="text">

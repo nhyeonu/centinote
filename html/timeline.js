@@ -29,7 +29,7 @@ function create_journal_group(datetime) {
 
     group = document.createElement("div");
     group.id = get_group_id_from_created(datetime);
-    group.classList.add("group");
+    group.classList.add("day");
 
     if(timeline.firstChild == null) {
         timeline.appendChild(group);
@@ -52,9 +52,10 @@ function create_journal_group(datetime) {
 
 function create_journal_entry(entry_json, entry_uuid) {
     let div = document.createElement("div");
+    div.classList.add("entry");
 
     let link = document.createElement("a");
-    link.classList.add("link");
+    link.classList.add("entry-link");
     link.setAttribute("href", "/editor.html?entry-uuid=" + entry_uuid);
     div.appendChild(link);
 

@@ -1,0 +1,13 @@
+:root {
+	--border-color: #b3b3b3;
+}
+
+* {
+    margin: 0;
+    box-sizing: border-box;
+	font-family: Sans-serif;
+}
+
+body {
+    margin: 0;
+}
