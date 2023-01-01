@@ -22,6 +22,7 @@ function submitRegister() {
 
     const username_input_element = document.getElementById("username");
     const password_input_element = document.getElementById("password");
+    const password_confirm_input_element = document.getElementById("password-confirm");
 
     const data = {};
     data.username = username_input_element.value;
@@ -44,6 +45,11 @@ function submitRegister() {
 
     if(data.password.length < 6) {
         setFormWarning("Password must be at least 6 characters!", password_input_element);
+        return;
+    }
+
+    if(password_input_element.value != password_confirm_input_element.value) {
+        setFormWarning("Passwords do not match!", password_confirm_input_element);
         return;
     }
 
