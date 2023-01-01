@@ -1,24 +1,28 @@
 use sqlx::{PgPool, Row};
 use actix_web::HttpRequest;
+use chrono::{Utc, NaiveDateTime};
 
 pub async fn verify_token(
     pool: &PgPool,
     auth_token: &str) -> Result<String, sqlx::Error> 
 {
-    let user_uuid_select_result = sqlx::query("SELECT user_uuid FROM sessions WHERE token = $1")
+    let user_row = 
+        sqlx::query("SELECT user_uuid, expiry FROM sessions WHERE token = $1")
         .bind(auth_token)
         .fetch_one(pool)
-        .await;
+        .await?;
 
-    let user_uuid_row = match user_uuid_select_result {
-        Ok(row) => row,
-        Err(error) => return Err(error)
-    };
+    let user_uuid: String = user_row.try_get("user_uuid")?;
+    let expiry: NaiveDateTime = user_row.try_get("expiry")?;
 
-    let user_uuid: String = match user_uuid_row.try_get("user_uuid") {
-        Ok(value) => value,
-        Err(error) => return Err(error)
-    };
+    if expiry.timestamp() < Utc::now().naive_utc().timestamp() {
+        sqlx::query("DELETE FROM sessions WHERE token = $1")
+            .bind(auth_token)
+            .execute(pool)
+            .await?;
+
+        return Err(sqlx::Error::RowNotFound);
+    }
 
     Ok(user_uuid)
 }

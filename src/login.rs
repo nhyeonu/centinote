@@ -4,6 +4,7 @@ use actix_web::{post, web, HttpResponse, Responder};
 use actix_web::cookie::{Cookie, SameSite};
 use serde::Deserialize;
 use sqlx::{PgPool, Row};
+use chrono::{Utc, Duration};
 use argon2::Argon2;
 use argon2::password_hash;
 use argon2::password_hash::{PasswordHash, PasswordVerifier};
@@ -69,8 +70,9 @@ async fn create_access_token(
         .map(char::from)
         .collect();
 
-    let insert_result = sqlx::query("INSERT INTO sessions VALUES ($1, $2);")
+    let insert_result = sqlx::query("INSERT INTO sessions VALUES ($1, $2, $3);")
         .bind(user_uuid)
+        .bind(Utc::now().naive_utc() + Duration::minutes(30))
         .bind(&token)
         .execute(db_pool)
         .await;

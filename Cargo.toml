@@ -11,3 +11,4 @@ sqlx = { version = "0.6", features = [ "runtime-tokio-rustls", "postgres", "migr
 argon2 = "0.4"
 rand = "0.8.5"
 uuid = { version="1.2.2", features = [ "v4", "fast-rng", "macro-diagnostics" ] }
+chrono = "0.4"
