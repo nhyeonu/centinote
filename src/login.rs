@@ -1,6 +1,6 @@
 use rand::{thread_rng, Rng};
 use rand::distributions::Alphanumeric;
-use actix_web::{post, web, HttpRequest, HttpResponse, Responder};
+use actix_web::{post, delete, web, HttpRequest, HttpResponse, Responder};
 use actix_web::cookie::{Cookie, SameSite};
 use serde::Deserialize;
 use sqlx::{PgPool, Row};
@@ -163,6 +163,30 @@ async fn post_session(
         .await;
 
     match update_result {
+        Ok(_) => return HttpResponse::Ok().finish(),
+        Err(error) => {
+            println!("{}", error);
+            return HttpResponse::InternalServerError().finish();
+        }
+    }
+}
+
+#[delete("/session")]
+async fn delete_session(
+    data: web::Data<State<'_>>,
+    req: HttpRequest) -> impl Responder
+{
+    let user_uuid = utils::verify_request_token!(&data.db_pool, &req);
+    let token = utils::get_auth_token(&req).unwrap();
+
+    let delete_result = 
+        sqlx::query("DELETE FROM sessions WHERE token = $1 AND user_uuid = $2")
+        .bind(&token)
+        .bind(&user_uuid)
+        .execute(&data.db_pool)
+        .await;
+
+    match delete_result {
         Ok(_) => return HttpResponse::Ok().finish(),
         Err(error) => {
             println!("{}", error);

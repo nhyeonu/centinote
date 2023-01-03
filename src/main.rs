@@ -53,6 +53,7 @@ async fn main() -> std::io::Result<()> {
                 web::scope("/api")
                     .service(crate::login::post_login)
                     .service(crate::login::post_session)
+                    .service(crate::login::delete_session)
                     .service(crate::journals::get_list)
                     .service(crate::journals::get)
                     .service(crate::journals::post)
