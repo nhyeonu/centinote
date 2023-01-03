@@ -16,7 +16,7 @@ function submitLogin() {
 
     xhr.onreadystatechange = function() {
         if(this.readyState == 4 && this.status > 99 && this.status < 300) {
-            window.location.replace("/timeline.html");
+            window.location.href = "/timeline.html";
         }
     };
 

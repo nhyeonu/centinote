@@ -21,11 +21,11 @@ function redirect(is_user_logged_in) {
     const is_personal_page = isPersonalPage(window.location.pathname);
 
     if(is_user_logged_in && !is_personal_page) {
-        window.location.replace("/timeline.html");
+        window.location.href = "/timeline.html";
     }
 
     if(!is_user_logged_in && !is_auth_page) {
-        window.location.replace("/login.html");
+        window.location.href = "/login.html";
     }
 }
 

@@ -16,7 +16,7 @@ function submitRegister() {
 
     xhr.onreadystatechange = function() {
         if(this.readyState == 4 && this.status > 99 && this.status < 300) {
-            window.location.replace("/login.html");
+            window.location.href = "/login.html";
         }
     };
 
