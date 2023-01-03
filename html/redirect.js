@@ -16,25 +16,16 @@ function isAuthPage(path) {
     return auth_pages.includes(path);
 }
 
-function redirect(is_user_logged_in) {
-    const is_auth_page = isAuthPage(window.location.pathname);
-    const is_personal_page = isPersonalPage(window.location.pathname);
-
-    if(is_user_logged_in && !is_personal_page) {
-        window.location.href = "/timeline.html";
-    }
-
-    if(!is_user_logged_in && !is_auth_page) {
-        window.location.href = "/login.html";
-    }
-}
-
 function onRequestStateChange() {
     if(this.readyState == 4) {
         if(this.status > 99 && this.status < 300) {
-            redirect(true);
+            if(!isPersonalPage(window.location.pathname)) {
+                window.location.href = "/timeline.html";
+            }
         } else {
-            redirect(false)
+            if(!isAuthPage(window.location.pathname)) {
+                window.location.href = "/login.html";
+            }
         }
     }
 }
@@ -46,7 +37,12 @@ function getCookieValue(target_name) {
     return value;
 }
 
-let xhr = new XMLHttpRequest();
-xhr.open("GET", "/api/users/" + getCookieValue("user_uuid"));
-xhr.onreadystatechange = onRequestStateChange;
-xhr.send();
+function validateAuth() {
+    let xhr = new XMLHttpRequest();
+    xhr.open("POST", "/api/session");
+    xhr.onreadystatechange = onRequestStateChange;
+    xhr.send();
+}
+
+validateAuth();
+window.setInterval(validateAuth, 5000);
