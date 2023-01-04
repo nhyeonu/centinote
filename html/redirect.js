@@ -23,7 +23,7 @@ function onRequestStateChange() {
             if(!isPersonalPage(window.location.pathname)) {
                 window.location.href = "/timeline.html";
             }
-        } else {
+        } else if(this.status == 401) {
             if(!isAuthPage(window.location.pathname)) {
                 window.location.href = "/login.html";
             }
