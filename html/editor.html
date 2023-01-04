@@ -13,14 +13,14 @@
             <a href="editor.html">
                 <img src="icons/plus-light.svg"></img>
             </a>
-			<a href="">
+			<a href="user.html">
                 <img src="icons/user-light.svg"></img>
             </a>
 		</div>
         <div id="editor">
-            <form id="editor-form" onsubmit="submitJson(this); return false;">
+            <form id="editor-form" autocomplete="off" onsubmit="submitJson(this); return false;">
                 <label for="title">Title</label>
-                <input id="title" type="text" autocomplete="off">
+                <input id="title" type="text">
                 <label for="body">Entry</label>
                 <textarea id="body"></textarea>
                 <input type="submit" value="Save"></input>

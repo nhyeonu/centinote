@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>User - Centinote</title>
+		<link rel="stylesheet" href="styles/global.css">
+		<link rel="stylesheet" href="styles/form.css">
+		<link rel="stylesheet" href="styles/topbar.css">
+		<link rel="stylesheet" href="styles/user-panel.css">
+	</head>
+	<body>
+		<div id="topbar">
+			<h1>CENTINOTE</h1>
+            <a href="editor.html">
+                <img src="icons/plus-light.svg"></img>
+            </a>
+			<a href="user.html">
+                <img src="icons/user-light.svg"></img>
+            </a>
+		</div>
+        <div id="user-panel">
+            <form onsubmit="logout(); return false;">
+                <h2 class="center-text">Session</h2>
+                <input type="submit" value="Log out">
+            </form>
+        </div>
+        <script src="user.js"></script>
+        <script src="redirect.js"></script>
+	</body>
+</html>

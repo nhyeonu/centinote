@@ -13,3 +13,8 @@
 body {
     margin: 0;
 }
+
+.center-text {
+    width: 100%;
+    text-align: center;
+}

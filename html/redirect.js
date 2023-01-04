@@ -1,7 +1,8 @@
 function isPersonalPage(path) {
     const personal_pages = [
         "/timeline.html",
-        "/editor.html"
+        "/editor.html",
+        "/user.html"
     ];
 
     return personal_pages.includes(path);
