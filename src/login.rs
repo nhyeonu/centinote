@@ -61,7 +61,7 @@ async fn verify_password(
     }
 }
 
-async fn create_access_token(
+async fn create_auth_cookie(
     db_pool: &PgPool,
     user_uuid: String) -> Result<Cookie, sqlx::Error> 
 {
@@ -117,7 +117,7 @@ async fn post_login(
     match verify_password(&data.argon2, &info.password, &password_hash).await {
         Ok(_) => {
             // Password is correct. Trying to create an access token.
-            match create_access_token(&data.db_pool, user_uuid.clone()).await {
+            match create_auth_cookie(&data.db_pool, user_uuid.clone()).await {
                 Ok(token) => return HttpResponse::Ok()
                     .cookie(token)
                     .cookie(Cookie::build("user_uuid", user_uuid)
@@ -186,8 +186,17 @@ async fn delete_session(
         .execute(&data.db_pool)
         .await;
 
+    let mut user_uuid_cookie = Cookie::build("user_uuid", "").path("/").finish();
+    user_uuid_cookie.make_removal();
+    
+    let mut auth_cookie = Cookie::build("auth", "").path("/").finish();
+    auth_cookie.make_removal();
+
     match delete_result {
-        Ok(_) => return HttpResponse::Ok().finish(),
+        Ok(_) => return HttpResponse::Ok()
+            .cookie(user_uuid_cookie)
+            .cookie(auth_cookie)
+            .finish(),
         Err(error) => {
             println!("{}", error);
             return HttpResponse::InternalServerError().finish();
