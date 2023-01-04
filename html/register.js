@@ -9,6 +9,11 @@ function setFormWarning(description, focus_element) {
 }
 
 function submitRegister() {
+    const username_input_element = document.getElementById("username");
+    const password_input_element = document.getElementById("password");
+    const password_confirm_input_element = document.getElementById("password-confirm");
+    const submit_input_element = document.getElementById("submit");
+
     let xhr = new XMLHttpRequest();
     xhr.open("POST", "/api/users");
     xhr.setRequestHeader("Accept", "application/json");
@@ -26,10 +31,6 @@ function submitRegister() {
             }
         }
     };
-
-    const username_input_element = document.getElementById("username");
-    const password_input_element = document.getElementById("password");
-    const password_confirm_input_element = document.getElementById("password-confirm");
 
     const data = {};
     data.username = username_input_element.value;
