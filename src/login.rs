@@ -186,10 +186,16 @@ async fn delete_session(
         .execute(&data.db_pool)
         .await;
 
-    let mut user_uuid_cookie = Cookie::build("user_uuid", "").path("/").finish();
+    let mut user_uuid_cookie = Cookie::build("user_uuid", "")
+        .same_site(SameSite::Strict)
+        .path("/")
+        .finish();
     user_uuid_cookie.make_removal();
     
-    let mut auth_cookie = Cookie::build("auth", "").path("/").finish();
+    let mut auth_cookie = Cookie::build("auth", "")
+        .same_site(SameSite::Strict)
+        .path("/")
+        .finish();
     auth_cookie.make_removal();
 
     match delete_result {
