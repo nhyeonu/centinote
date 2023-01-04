@@ -15,8 +15,15 @@ function submitRegister() {
     xhr.setRequestHeader("Content-Type", "application/json");
 
     xhr.onreadystatechange = function() {
-        if(this.readyState == 4 && this.status > 99 && this.status < 300) {
-            window.location.href = "/login.html";
+        if(xhr.readyState == 4) {
+            if(xhr.status > 99 && xhr.status < 300) {
+                window.location.href = "/login.html";
+            } else {
+                setFormWarning(
+                    "Something has gone wrong! " +
+                    "Please contact the server admin if the problem persists.",
+                    submit_input_element);
+            }
         }
     };
 
