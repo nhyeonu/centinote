@@ -63,6 +63,10 @@ async fn post(
         return HttpResponse::BadRequest().finish();
     }
 
+    if info.username.len() < 2 || info.password.len() < 6 {
+        return HttpResponse::BadRequest().finish();
+    }
+
     let user_count_result = sqlx::query("SELECT COUNT(*) AS count FROM users WHERE username = $1")
         .bind(info.username.clone())
         .fetch_one(&data.db_pool)
