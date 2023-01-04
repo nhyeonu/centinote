@@ -1,27 +1,7 @@
-[hidden] {
-    display: none !important;
-}
-
 #creds {
     width: 450px;
     position: absolute;
     top: 35%;
     left: 50%;
     transform: translate(-50%, -50%);
-}
-
-.warning {
-    display: flex;
-    align-items: center;
-    border: 2px solid rgba(255, 0, 0, 0.5);
-    background-color: rgba(255, 0, 0, 0.2);
-    border-radius: 5px;
-    margin: 8px 0;
-    height: 50px;
-}
-
-.warning p {
-    color: rgba(200, 0, 0, 1);
-    width: 100%;
-    text-align: center;
 }

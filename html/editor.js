@@ -1,20 +1,38 @@
+function setFormWarning(description, focus_element) {
+    const container = document.getElementById("warning-container");
+    const paragraph = document.getElementById("warning-paragraph");
+
+    container.hidden = false;
+    paragraph.innerHTML = description;
+
+    focus_element.focus();
+}
+
 let method;
 let target;
 
 function submitJson(form) {
+    const title_element = document.getElementById("title");
+    const body_element = document.getElementById("body");
+    const submit_element = document.getElementById("submit");
+
     let xhr = new XMLHttpRequest();
     xhr.open(method, target);
     xhr.setRequestHeader("Accept", "application/json");
     xhr.setRequestHeader("Content-Type", "application/json");
 
     xhr.onreadystatechange = function() {
-        if(this.readyState == 4 && this.status > 99 && this.status < 300) {
-            window.location.href = "/timeline.html";
+        if(xhr.readyState == 4) {
+            if(xhr.status > 99 && xhr.status < 300) {
+                window.location.href = "/timeline.html";
+            } else {
+                setFormWarning(
+                    "Something has gone wrong! " +
+                    "Please contact the server admin if the problem persists.",
+                    submit_element);
+            }
         }
     };
-
-    const title_element = document.getElementById("title");
-    const body_element = document.getElementById("body");
 
     const data = {};
     data.title = title_element.value;

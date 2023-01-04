@@ -6,6 +6,7 @@
 		<link rel="stylesheet" href="styles/topbar.css">
 		<link rel="stylesheet" href="styles/form.css">
 		<link rel="stylesheet" href="styles/editor.css">
+        <link rel="stylesheet" href="styles/warning.css">
 	</head>
 	<body>
 		<div id="topbar">
@@ -18,12 +19,15 @@
             </a>
 		</div>
         <div id="editor">
+            <div id="warning-container" class="warning" hidden>
+                <p id="warning-paragraph"></p>
+            </div>
             <form id="editor-form" autocomplete="off" onsubmit="submitJson(this); return false;">
                 <label for="title">Title</label>
                 <input id="title" type="text">
                 <label for="body">Entry</label>
                 <textarea id="body"></textarea>
-                <input type="submit" value="Save"></input>
+                <input type="submit" id="submit" value="Save"></input>
             </form>
         </div>
         <script src="editor.js"></script>
