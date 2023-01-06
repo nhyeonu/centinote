@@ -1,4 +1,23 @@
 #editor {
     width: 750px;
-    margin: 30px auto;
+    margin: 12px auto;
+}
+
+#delete-button {
+    margin-bottom: 8px;
+    width: 120px;
+    height: 35px;
+    font-size: 14px;
+    border: 1px solid var(--border-color); 
+    border-radius: 3px;
+    font-size: 15px;
+	background-color: #ededed;
+}
+
+#delete-button:hover {
+    background-color: #dedede;
+}
+
+#delete-button:active {
+    background-color: #c9c9c9;
 }

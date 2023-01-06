@@ -24,6 +24,7 @@
             <div id="warning-container" class="warning" hidden>
                 <p id="warning-paragraph"></p>
             </div>
+            <button type="button" id="delete-button" onclick="deleteEntry()" hidden>Delete</button>
             <form id="editor-form" autocomplete="off" onsubmit="submitJson(this); return false;">
                 <label for="title">Title</label>
                 <input id="title" type="text">

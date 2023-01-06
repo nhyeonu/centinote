@@ -58,7 +58,31 @@ const url_parameters = new URLSearchParams(query_string);
 const user_uuid = get_cookie_value("user_uuid");
 const entry_uuid = url_parameters.get("entry-uuid");
 
+function deleteEntry() {
+    if(confirm("Do you really want to delete this entry?")) {
+        const xhr = new XMLHttpRequest();
+        xhr.open("DELETE", "/api/users/" + user_uuid + "/journals/" + entry_uuid)
+        xhr.onreadystatechange = function() {
+            if(xhr.readyState == 4) {
+                if(xhr.status > 99 && xhr.status < 300) {
+                    window.location.href = "/timeline.html";
+                } else {
+                    const submit_element = document.getElementById("submit");
+                    setFormWarning(
+                        "Something has gone wrong! " +
+                        "Please contact the server admin if the problem persists.",
+                        submit_element);
+                }
+            }
+        };
+
+        xhr.send();
+    }
+}
+
 if(entry_uuid != null) {
+    document.getElementById("delete-button").hidden = false;
+
     method = "PATCH";
     target = "/api/users/" + user_uuid + "/journals/" + entry_uuid;
 
