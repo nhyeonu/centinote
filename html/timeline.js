@@ -31,11 +31,7 @@ function create_journal_group(datetime) {
     group.id = get_group_id_from_created(datetime);
     group.classList.add("day");
 
-    if(timeline.firstChild == null) {
-        timeline.appendChild(group);
-    } else {
-        timeline.insertBefore(group, timeline.firstChild);
-    }
+    timeline.appendChild(group);
 
     let timedate_header = document.createElement("h2");
     timedate_header.innerHTML = 
@@ -71,7 +67,7 @@ function create_journal_entry(entry_json, entry_uuid) {
 }
 
 function processAnotherEntry(uuids, i) {
-    if(i < 0) {
+    if(i == uuids.length) {
         return;
     }
 
@@ -89,9 +85,13 @@ function processAnotherEntry(uuids, i) {
             }
 
             const entry_element = create_journal_entry(entry, uuids[i]);
-            group.appendChild(entry_element);
+            if(group.children.length == 1) {
+                group.appendChild(entry_element);
+            } else {
+                group.insertBefore(entry_element, group.children[1]);
+            }
 
-            processAnotherEntry(uuids, i - 1);
+            processAnotherEntry(uuids, i + 1);
         }
     };
 
@@ -102,7 +102,7 @@ function processAnotherEntry(uuids, i) {
 function onListResponse() {
     if(this.readyState == 4 && this.status == 200) {
         const response = JSON.parse(this.response);
-        processAnotherEntry(response.uuids, response.uuids.length - 1);
+        processAnotherEntry(response.uuids, 0);
     }
 }
 
