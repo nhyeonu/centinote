@@ -1,5 +1,5 @@
 use serde::{Serialize, Deserialize};
-use actix_web::{get, post, patch, web, Responder, HttpRequest, HttpResponse};
+use actix_web::{get, post, delete, patch, web, Responder, HttpRequest, HttpResponse};
 use sqlx::{PgPool, Row, types::chrono::{DateTime, TimeZone, FixedOffset, NaiveDateTime, Utc}};
 use uuid::Uuid;
 use crate::State;
@@ -125,6 +125,23 @@ async fn query_journal_entry(
         title: title,
         body: body
     })
+}
+
+async fn count_journal_entry(
+    db_pool: &PgPool,
+    user_uuid: &str,
+    entry_uuid: &str) -> Result<i64, sqlx::Error>
+{
+    let row = 
+        sqlx::query("SELECT COUNT(*) AS count FROM journals WHERE uuid = $1 AND user_uuid = $2")
+        .bind(entry_uuid)
+        .bind(user_uuid)
+        .fetch_one(db_pool)
+        .await?;
+
+    let count: i64 = row.try_get("count")?;
+
+    Ok(count)
 }
 
 #[get("/users/{user_uuid}/journals")]
@@ -260,22 +277,7 @@ async fn patch(
         return HttpResponse::Unauthorized().finish();
     }
 
-    let select_result = 
-        sqlx::query("SELECT COUNT(*) AS count FROM journals WHERE uuid = $1 AND user_uuid = $2")
-        .bind(&entry_uuid)
-        .bind(&trusted_user_uuid)
-        .fetch_one(&data.db_pool)
-        .await;
-
-    let count_row = match select_result {
-        Ok(row) => row,
-        Err(error) => {
-            println!("{}", error);
-            return HttpResponse::InternalServerError().finish();
-        }
-    };
-
-    let count: i64 = match count_row.try_get("count") {
+    let count = match count_journal_entry(&data.db_pool, &trusted_user_uuid, &entry_uuid).await {
         Ok(value) => value,
         Err(error) => {
             println!("{}", error);
@@ -297,6 +299,47 @@ async fn patch(
         .await;
 
     match update_result {
+        Ok(_) => return HttpResponse::Ok().finish(),
+        Err(error) => {
+            println!("{}", error);
+            return HttpResponse::InternalServerError().finish();
+        }
+    }
+}
+
+#[delete("/users/{user_uuid}/journals/{entry_uuid}")]
+async fn delete(
+    data: web::Data<State<'_>>,
+    req: HttpRequest,
+    path: web::Path<(String, String)>) -> impl Responder 
+{
+    let trusted_user_uuid = utils::verify_request_token!(&data.db_pool, &req);
+    let (request_user_uuid, entry_uuid) = path.into_inner();
+
+    if request_user_uuid != trusted_user_uuid {
+        return HttpResponse::Unauthorized().finish();
+    }
+
+    let count = match count_journal_entry(&data.db_pool, &trusted_user_uuid, &entry_uuid).await {
+        Ok(value) => value,
+        Err(error) => {
+            println!("{}", error);
+            return HttpResponse::InternalServerError().finish();
+        }
+    };
+
+    if count == 0 {
+        return HttpResponse::NotFound().finish();
+    }
+
+    let delete_result = 
+        sqlx::query("DELETE FROM journals WHERE uuid = $1 AND user_uuid = $2")
+        .bind(&entry_uuid)
+        .bind(&trusted_user_uuid)
+        .execute(&data.db_pool)
+        .await;
+
+    match delete_result {
         Ok(_) => return HttpResponse::Ok().finish(),
         Err(error) => {
             println!("{}", error);

@@ -58,6 +58,7 @@ async fn main() -> std::io::Result<()> {
                     .service(crate::journals::get)
                     .service(crate::journals::post)
                     .service(crate::journals::patch)
+                    .service(crate::journals::delete)
                     .service(crate::users::get)
                     .service(crate::users::post)
             )
