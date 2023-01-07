@@ -92,7 +92,7 @@ async fn create_auth_cookie(
     }
 }
 
-#[post("/login")]
+#[post("/api/login")]
 async fn post_login(
     data: web::Data<State<'_>>,
     info: web::Json<Login>) -> impl Responder 
@@ -146,7 +146,7 @@ async fn post_login(
     }
 }
 
-#[post("/session")]
+#[post("/api/session")]
 async fn post_session(
     data: web::Data<State<'_>>,
     req: HttpRequest) -> impl Responder
@@ -171,7 +171,7 @@ async fn post_session(
     }
 }
 
-#[delete("/session")]
+#[delete("/api/session")]
 async fn delete_session(
     data: web::Data<State<'_>>,
     req: HttpRequest) -> impl Responder

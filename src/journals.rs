@@ -144,7 +144,7 @@ async fn count_journal_entry(
     Ok(count)
 }
 
-#[get("/users/{user_uuid}/journals")]
+#[get("/api/users/{user_uuid}/journals")]
 async fn get_list(
     data: web::Data<State<'_>>,
     path: web::Path<String>,
@@ -183,7 +183,7 @@ async fn get_list(
     }).respond_to(&req).map_into_boxed_body()
 }
 
-#[post("/users/{user_uuid}/journals")]
+#[post("/api/users/{user_uuid}/journals")]
 async fn post(
     data: web::Data<State<'_>>,
     req: HttpRequest,
@@ -231,7 +231,7 @@ async fn post(
     }
 }
 
-#[get("/users/{user_uuid}/journals/{entry_uuid}")]
+#[get("/api/users/{user_uuid}/journals/{entry_uuid}")]
 async fn get(
     data: web::Data<State<'_>>,
     req: HttpRequest,
@@ -263,7 +263,7 @@ async fn get(
     web::Json(journal_data).respond_to(&req).map_into_boxed_body()
 }
 
-#[patch("/users/{user_uuid}/journals/{entry_uuid}")]
+#[patch("/api/users/{user_uuid}/journals/{entry_uuid}")]
 async fn patch(
     data: web::Data<State<'_>>,
     req: HttpRequest,
@@ -307,7 +307,7 @@ async fn patch(
     }
 }
 
-#[delete("/users/{user_uuid}/journals/{entry_uuid}")]
+#[delete("/api/users/{user_uuid}/journals/{entry_uuid}")]
 async fn delete(
     data: web::Data<State<'_>>,
     req: HttpRequest,

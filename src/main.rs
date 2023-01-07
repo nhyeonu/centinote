@@ -49,19 +49,16 @@ async fn main() -> std::io::Result<()> {
                 db_pool: pool.clone(),
                 argon2: Argon2::default(),
             }))
-            .service(
-                web::scope("/api")
-                    .service(crate::login::post_login)
-                    .service(crate::login::post_session)
-                    .service(crate::login::delete_session)
-                    .service(crate::journals::get_list)
-                    .service(crate::journals::get)
-                    .service(crate::journals::post)
-                    .service(crate::journals::patch)
-                    .service(crate::journals::delete)
-                    .service(crate::users::get)
-                    .service(crate::users::post)
-            )
             .service(actix_files::Files::new("/", html_dir).index_file("redirect.html"))
+            .service(crate::login::post_login)
+            .service(crate::login::post_session)
+            .service(crate::login::delete_session)
+            .service(crate::journals::get_list)
+            .service(crate::journals::get)
+            .service(crate::journals::post)
+            .service(crate::journals::patch)
+            .service(crate::journals::delete)
+            .service(crate::users::get)
+            .service(crate::users::post)
     }).bind(("0.0.0.0", 8080))?.run().await
 }

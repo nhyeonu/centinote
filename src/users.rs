@@ -52,7 +52,7 @@ async fn create_user(
     }
 }
 
-#[post("/users")]
+#[post("/api/users")]
 async fn post(
     data: web::Data<State<'_>>,
     info: web::Json<UserCreate>) -> impl Responder 
@@ -98,7 +98,7 @@ async fn post(
     }
 }
 
-#[get("/users/{user_uuid}")]
+#[get("/api/users/{user_uuid}")]
 async fn get(
     data: web::Data<State<'_>>,
     req: HttpRequest,
