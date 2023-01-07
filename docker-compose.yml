@@ -5,6 +5,10 @@ services:
     ports:
       - "80:8080"
     environment:
+      CENTINOTE_DB_HOST: "db"
+      CENTINOTE_DB_DATABASE: "centinote"
+      CENTINOTE_DB_USERNAME: "postgres"
+      CENTINOTE_DB_PASSWORD: "insecure"
       TZ: "Asia/Seoul"
     restart: always
   db:

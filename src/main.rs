@@ -4,22 +4,40 @@ mod state;
 mod utils;
 mod users;
 
+use std::env;
 use std::path::Path;
 use actix_web::{web, App, HttpServer};
 use argon2::Argon2;
-use sqlx::{postgres::PgPoolOptions, migrate::Migrator};
+use sqlx::{PgPool, postgres::PgPoolOptions, migrate::Migrator};
 use crate::state::State;
 
-#[actix_web::main]
-async fn main() -> std::io::Result<()> {
-    //TODO: Look up resources at relative path from the executable.
-    let migrations_dir = "/usr/local/share/centinote/sql/migrations";
-    let html_dir = "/usr/local/share/centinote/html";
+async fn db_connect() -> PgPool {
+    let db_host = match env::var("CENTINOTE_DB_HOST") {
+        Ok(value) => value,
+        Err(_) => "localhost".to_string()
+    };
+
+    let db_database = match env::var("CENTINOTE_DB_DATABASE") {
+        Ok(value) => value,
+        Err(_) => "centinote".to_string()
+    };
+
+    let db_username = match env::var("CENTINOTE_DB_USERNAME") {
+        Ok(value) => value,
+        Err(_) => "".to_string()
+    };
+
+    let db_password = match env::var("CENTINOTE_DB_PASSWORD") {
+        Ok(value) => value,
+        Err(_) => "".to_string()
+    };
+
+    let db_url = format!("postgres://{db_username}:{db_password}@{db_host}/{db_database}");
 
     println!("Connecting to the database...");
     let pool_connect_result = PgPoolOptions::new()
         .max_connections(5)
-        .connect("postgres://postgres:insecure@db/centinote")
+        .connect(&db_url)
         .await;
 
     let pool = match pool_connect_result {
@@ -29,6 +47,16 @@ async fn main() -> std::io::Result<()> {
         },
         Err(error) => panic!("{}", error)
     };
+
+    pool
+}
+
+#[actix_web::main]
+async fn main() -> std::io::Result<()> {
+    //TODO: Look up resources at relative path from the executable.
+    let migrations_dir = "/usr/local/share/centinote/sql/migrations";
+    let html_dir = "/usr/local/share/centinote/html";
+    let pool = db_connect().await;
 
     let migrator_create_result = Migrator::new(Path::new(migrations_dir)).await;
     let migrator = match migrator_create_result {
