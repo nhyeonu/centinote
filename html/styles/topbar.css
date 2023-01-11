@@ -3,6 +3,10 @@ h1 {
 	color: #3d3d3d;
 }
 
+body {
+    padding-top: 55px;
+}
+
 #logo {
 	color: black;
 	text-decoration: none;
@@ -10,6 +14,8 @@ h1 {
 }
 
 #topbar {
+    position: fixed;
+    top: 0;
 	width: 100%;
 	height: 55px;
 	background-color: #ededed;
