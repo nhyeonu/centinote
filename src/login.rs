@@ -17,48 +17,38 @@ struct Login {
     password: String,
 }
 
-async fn query_user_by_username(
-    db_pool: &PgPool,
-    username: &str) -> Result<(String, String), sqlx::Error> 
-{
-    let password_select_result = 
-        sqlx::query("SELECT password_hash, uuid FROM users WHERE username = $1")
-        .bind(username)
-        .fetch_one(db_pool)
-        .await;
-
-    let user_row = match password_select_result {
-        Ok(row) => row,
-        Err(error) => return Err(error)
-    };
-
-    let user_uuid: String = match user_row.try_get("uuid") {
-        Ok(uuid) => uuid,
-        Err(error) => return Err(error)
-    };
-
-    let password_hash: String = match user_row.try_get("password_hash") {
-        Ok(hash) => hash,
-        Err(error) => return Err(error)
-    };
-
-    Ok((user_uuid, password_hash))
+struct User {
+    uuid: String,
+    username: String,
+    password_hash: String,
 }
 
-async fn verify_password(
+impl User {
+    async fn from_username(username: &str, db_pool: &PgPool) -> Result<User, sqlx::Error> {
+        let user_row = 
+            sqlx::query("SELECT password_hash, uuid FROM users WHERE username = $1")
+            .bind(username)
+            .fetch_one(db_pool)
+            .await?;
+
+        let user_uuid: String = user_row.try_get("uuid")?;
+        let password_hash: String = user_row.try_get("password_hash")?;
+
+        Ok(User {
+            uuid: user_uuid,
+            username: username.to_string(),
+            password_hash: password_hash,
+        })
+    }
+}
+
+fn verify_password(
     argon2: &Argon2<'_>,
     password: &str,
     password_hash: &str) -> Result<(), password_hash::errors::Error> 
 {
-    let parsed_hash = match PasswordHash::new(password_hash) {
-        Ok(parsed) => parsed,
-        Err(error) => return Err(error)
-    };
-
-    match argon2.verify_password(password.as_bytes(), &parsed_hash) {
-        Ok(_) => Ok(()),
-        Err(error) => Err(error)
-    }
+    let parsed_hash = PasswordHash::new(password_hash)?;
+    Ok(argon2.verify_password(password.as_bytes(), &parsed_hash)?)
 }
 
 async fn create_auth_cookie(
@@ -71,25 +61,20 @@ async fn create_auth_cookie(
         .map(char::from)
         .collect();
 
-    let insert_result = sqlx::query("INSERT INTO sessions VALUES ($1, $2, $3);")
+    sqlx::query("INSERT INTO sessions VALUES ($1, $2, $3);")
         .bind(user_uuid)
         .bind(Utc::now().naive_utc() + Duration::minutes(30))
         .bind(&token)
         .execute(db_pool)
-        .await;
+        .await?;
 
-    match insert_result {
-        Ok(_) => {
-            Ok(
-                Cookie::build("auth", token.clone())
-                .http_only(true)
-                .path("/")
-                .same_site(SameSite::Strict)
-                .finish()
-            )
-        },
-        Err(error) => Err(error)
-    }
+    let cookie = Cookie::build("auth", token.clone())
+        .http_only(true)
+        .path("/")
+        .same_site(SameSite::Strict)
+        .finish();
+
+    Ok(cookie)
 }
 
 #[post("/api/login")]
@@ -97,9 +82,7 @@ async fn post_login(
     data: web::Data<State<'_>>,
     info: web::Json<Login>) -> impl Responder 
 {
-
-    let user_query_result = query_user_by_username(&data.db_pool, &info.username).await;
-    let (user_uuid, password_hash) = match user_query_result {
+    let user = match User::from_username(&info.username, &data.db_pool).await {
         Ok(values) => values,
         Err(error) => {
             match error {
@@ -114,13 +97,13 @@ async fn post_login(
         }
     };
 
-    match verify_password(&data.argon2, &info.password, &password_hash).await {
+    match verify_password(&data.argon2, &info.password, &user.password_hash) {
         Ok(_) => {
             // Password is correct. Trying to create an access token.
-            match create_auth_cookie(&data.db_pool, user_uuid.clone()).await {
+            match create_auth_cookie(&data.db_pool, user.uuid.clone()).await {
                 Ok(token) => return HttpResponse::Ok()
                     .cookie(token)
-                    .cookie(Cookie::build("user_uuid", user_uuid)
+                    .cookie(Cookie::build("user_uuid", user.uuid)
                             .same_site(SameSite::Strict)
                             .path("/")
                             .finish())
