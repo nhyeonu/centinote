@@ -3,7 +3,7 @@ use actix_web::{get, post, delete, patch, web, Responder, HttpRequest, HttpRespo
 use sqlx::{PgPool, Row, types::chrono::{DateTime, TimeZone, FixedOffset, NaiveDateTime, Utc}};
 use uuid::Uuid;
 use crate::State;
-use crate::utils;
+use crate::session;
 
 #[derive(Serialize)]
 struct JournalList {
@@ -146,22 +146,11 @@ async fn count_journal_entry(
 
 #[get("/api/users/{user_uuid}/journals")]
 async fn get_list(
+    session: session::Session,
     data: web::Data<State<'_>>,
-    path: web::Path<String>,
     req: HttpRequest) -> impl Responder
 {
-    let user_uuid = {
-        let request_user_uuid = path.into_inner();
-        let trusted_user_uuid = utils::verify_request_token!(&data.db_pool, &req);
-
-        if request_user_uuid != trusted_user_uuid {
-            return HttpResponse::Unauthorized().finish();
-        }
-
-        request_user_uuid
-    };
-
-    let uuids = match query_journal_uuids_for_user(&data.db_pool, user_uuid).await {
+    let uuids = match query_journal_uuids_for_user(&data.db_pool, session.user_uuid).await {
         Ok(uuids) => uuids,
         Err(error) => {
             match error {
@@ -185,10 +174,9 @@ async fn get_list(
 
 #[post("/api/users/{user_uuid}/journals")]
 async fn post(
+    session: session::Session,
     data: web::Data<State<'_>>,
-    req: HttpRequest,
-    info: web::Json<JournalCreate>,
-    path: web::Path<String>) -> impl Responder 
+    info: web::Json<JournalCreate>) -> impl Responder 
 {
     if info.title.len() > 128 || info.body.len() > 2048 {
         return HttpResponse::BadRequest().finish();
@@ -198,20 +186,9 @@ async fn post(
         return HttpResponse::BadRequest().finish();
     }
 
-    let user_uuid = {
-        let request_user_uuid = path.into_inner();
-        let trusted_user_uuid = utils::verify_request_token!(&data.db_pool, &req);
-
-        if request_user_uuid != trusted_user_uuid {
-            return HttpResponse::Unauthorized().finish();
-        }
-
-        request_user_uuid
-    };
-
     let create_result = create_journal_entry(
         &data.db_pool,
-        &user_uuid,
+        &session.user_uuid,
         info.timezone_offset,
         &info.title,
         &info.body
@@ -233,19 +210,15 @@ async fn post(
 
 #[get("/api/users/{user_uuid}/journals/{entry_uuid}")]
 async fn get(
+    session: session::Session,
     data: web::Data<State<'_>>,
-    req: HttpRequest,
-    path: web::Path<(String, String)>) -> impl Responder 
+    path: web::Path<(String, String)>,
+    req: HttpRequest) -> impl Responder 
 {
-    let trusted_user_uuid = utils::verify_request_token!(&data.db_pool, &req);
-    let (request_user_uuid, journal_entry_uuid) = path.into_inner();
-
-    if request_user_uuid != trusted_user_uuid {
-        return HttpResponse::Unauthorized().finish();
-    }
+    let (_, entry_uuid) = path.into_inner();
 
     let journal_data_result = 
-        query_journal_entry(&data.db_pool, &request_user_uuid, &journal_entry_uuid).await;
+        query_journal_entry(&data.db_pool, &session.user_uuid, &entry_uuid).await;
 
     let journal_data = match journal_data_result {
         Ok(data) => data,
@@ -265,19 +238,14 @@ async fn get(
 
 #[patch("/api/users/{user_uuid}/journals/{entry_uuid}")]
 async fn patch(
+    session: session::Session,
     data: web::Data<State<'_>>,
-    req: HttpRequest,
     info: web::Json<JournalUpdate>,
     path: web::Path<(String, String)>) -> impl Responder 
 {
-    let trusted_user_uuid = utils::verify_request_token!(&data.db_pool, &req);
-    let (request_user_uuid, entry_uuid) = path.into_inner();
+    let (_, entry_uuid) = path.into_inner();
 
-    if request_user_uuid != trusted_user_uuid {
-        return HttpResponse::Unauthorized().finish();
-    }
-
-    let count = match count_journal_entry(&data.db_pool, &trusted_user_uuid, &entry_uuid).await {
+    let count = match count_journal_entry(&data.db_pool, &session.user_uuid, &entry_uuid).await {
         Ok(value) => value,
         Err(error) => {
             println!("{}", error);
@@ -294,7 +262,7 @@ async fn patch(
         .bind(&info.title)
         .bind(&info.body)
         .bind(&entry_uuid)
-        .bind(&trusted_user_uuid)
+        .bind(&session.user_uuid)
         .execute(&data.db_pool)
         .await;
 
@@ -309,18 +277,13 @@ async fn patch(
 
 #[delete("/api/users/{user_uuid}/journals/{entry_uuid}")]
 async fn delete(
+    session: session::Session,
     data: web::Data<State<'_>>,
-    req: HttpRequest,
     path: web::Path<(String, String)>) -> impl Responder 
 {
-    let trusted_user_uuid = utils::verify_request_token!(&data.db_pool, &req);
-    let (request_user_uuid, entry_uuid) = path.into_inner();
-
-    if request_user_uuid != trusted_user_uuid {
-        return HttpResponse::Unauthorized().finish();
-    }
-
-    let count = match count_journal_entry(&data.db_pool, &trusted_user_uuid, &entry_uuid).await {
+    let (_, entry_uuid) = path.into_inner();
+    
+    let count = match count_journal_entry(&data.db_pool, &session.user_uuid, &entry_uuid).await {
         Ok(value) => value,
         Err(error) => {
             println!("{}", error);
@@ -335,7 +298,7 @@ async fn delete(
     let delete_result = 
         sqlx::query("DELETE FROM journals WHERE uuid = $1 AND user_uuid = $2")
         .bind(&entry_uuid)
-        .bind(&trusted_user_uuid)
+        .bind(&session.user_uuid)
         .execute(&data.db_pool)
         .await;
 

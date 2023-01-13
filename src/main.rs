@@ -3,6 +3,7 @@ mod login;
 mod state;
 mod utils;
 mod users;
+mod session;
 
 use std::env;
 use std::path::Path;
