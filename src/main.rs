@@ -1,16 +1,10 @@
-mod journals;
-mod login;
-mod state;
-mod utils;
-mod users;
-mod session;
+mod backend;
+mod handlers;
 
 use std::env;
 use std::path::Path;
 use actix_web::{web, App, HttpServer};
-use argon2::Argon2;
 use sqlx::{PgPool, postgres::PgPoolOptions, migrate::Migrator};
-use crate::state::State;
 
 async fn db_connect() -> PgPool {
     let db_host = match env::var("CENTINOTE_DB_HOST") {
@@ -72,22 +66,17 @@ async fn main() -> std::io::Result<()> {
     }
 
     println!("Starting the web server...");
-    HttpServer::new(move || {
-        App::new()
-            .app_data(web::Data::new(State {
-                db_pool: pool.clone(),
-                argon2: Argon2::default(),
-            }))
-            .service(crate::login::post_login)
-            .service(crate::login::post_session)
-            .service(crate::login::delete_session)
-            .service(crate::journals::get_list)
-            .service(crate::journals::get)
-            .service(crate::journals::post)
-            .service(crate::journals::patch)
-            .service(crate::journals::delete)
-            .service(crate::users::get)
-            .service(crate::users::post)
+    HttpServer::new(move || { App::new()
+            .app_data(web::Data::new(pool.clone()))
+            .service(handlers::user_create)
+            .service(handlers::login)
+            .service(handlers::session_refresh)
+            .service(handlers::session_delete)
+            .service(handlers::entry_list)
+            .service(handlers::entry_detail)
+            .service(handlers::entry_create)
+            .service(handlers::entry_update)
+            .service(handlers::entry_delete)
             .service(actix_files::Files::new("/", html_dir).index_file("redirect.html"))
     }).bind(("0.0.0.0", 8080))?.run().await
 }

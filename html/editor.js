@@ -61,7 +61,7 @@ const entry_uuid = url_parameters.get("entry-uuid");
 function deleteEntry() {
     if(confirm("Do you really want to delete this entry?")) {
         const xhr = new XMLHttpRequest();
-        xhr.open("DELETE", "/api/users/" + user_uuid + "/journals/" + entry_uuid)
+        xhr.open("DELETE", "/api/users/" + user_uuid + "/entries/" + entry_uuid)
         xhr.onreadystatechange = function() {
             if(xhr.readyState == 4) {
                 if(xhr.status > 99 && xhr.status < 300) {
@@ -84,7 +84,7 @@ if(entry_uuid != null) {
     document.getElementById("delete-button").hidden = false;
 
     method = "PATCH";
-    target = "/api/users/" + user_uuid + "/journals/" + entry_uuid;
+    target = "/api/users/" + user_uuid + "/entries/" + entry_uuid;
 
     const xhr = new XMLHttpRequest();
     xhr.open("GET", target);
@@ -102,5 +102,5 @@ if(entry_uuid != null) {
     xhr.send();
 } else {
     method = "POST";
-    target = "/api/users/" + user_uuid + "/journals";
+    target = "/api/users/" + user_uuid + "/entries";
 }

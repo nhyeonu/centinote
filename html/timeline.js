@@ -95,7 +95,7 @@ function processAnotherEntry(uuids, i) {
         }
     };
 
-    entry_xhr.open("GET", "/api/users/" + user_uuid + "/journals/" + uuids[i]);
+    entry_xhr.open("GET", "/api/users/" + user_uuid + "/entries/" + uuids[i]);
     entry_xhr.send();
 }
 
@@ -110,5 +110,5 @@ const user_uuid = get_cookie_value("user_uuid");
 
 const list_xhr = new XMLHttpRequest();
 list_xhr.onreadystatechange = onListResponse;
-list_xhr.open("GET", "/api/users/" + user_uuid + "/journals");
+list_xhr.open("GET", "/api/users/" + user_uuid + "/entries");
 list_xhr.send();

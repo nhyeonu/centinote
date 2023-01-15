@@ -39,8 +39,11 @@ function getCookieValue(target_name) {
 }
 
 function validateAuth() {
+    let user_uuid = getCookieValue("user_uuid");
+    let session_uuid = getCookieValue("session_uuid");
+
     let xhr = new XMLHttpRequest();
-    xhr.open("POST", "/api/session");
+    xhr.open("POST", "/api/users/" + user_uuid + "/sessions/" + session_uuid);
     xhr.onreadystatechange = onRequestStateChange;
     xhr.send();
 }
