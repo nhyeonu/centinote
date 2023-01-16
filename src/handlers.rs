@@ -5,7 +5,10 @@ use actix_web::{
 };
 use serde::{Serialize, Deserialize};
 use sqlx::PgPool;
-use crate::backend::{Session, User, Entry};
+
+use crate::entry::Entry;
+use crate::session::Session;
+use crate::user::User;
 
 /*
 ===== POST /api/users =====
