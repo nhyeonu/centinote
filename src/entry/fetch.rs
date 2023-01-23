@@ -4,7 +4,7 @@ use sqlx::{PgPool, Row};
 use super::Entry;
 use super::utils;
 
-async fn by_uuid_and_user_sqlx(
+async fn by_uuid_sqlx(
     db_pool: &PgPool,
     entry_uuid: &str,
     user_uuid: &str) -> Result<Entry, sqlx::Error>
@@ -36,12 +36,12 @@ async fn by_uuid_and_user_sqlx(
 }
 
 impl Entry {
-    pub async fn by_uuid_and_user(
+    pub async fn by_uuid(
         db_pool: &PgPool,
         entry_uuid: &str,
         user_uuid: &str) -> Result<Self, Error> 
     {
-        match by_uuid_and_user_sqlx(db_pool, entry_uuid, user_uuid).await {
+        match by_uuid_sqlx(db_pool, entry_uuid, user_uuid).await {
             Ok(value) => Ok(value),
             Err(error) => {
                 match error {

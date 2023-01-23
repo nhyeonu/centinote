@@ -146,12 +146,17 @@ async fn session_delete(
 }
 
 /*
-===== GET /api/users/{user_uuid}/entries =====
+===== GET /api/users/{user_uuid}/entries?full_content={true/false} =====
 
-This handler on success, responds with a list of entry UUIDs that belong to a user, recent first.
+This handler on success, responds with content of requested entries, recent first.
 
-Response JSON example: 
-{ "uuids": ["5315486c-02ee-4712-9793-b002193d0275", "2deffb77-b215-47b5-a074-ddd4127cc4b5"] }
+Response JSON examples: 
+{
+    "uuid": ["5315486c-02ee-4712-9793-b002193d0275", "2deffb77-b215-47b5-a074-ddd4127cc4b5"],
+    "created": ["2023-01-07T06:29:16.035754+09:00", "2023-01-07T07:36:24.014244+09:00"],
+    "title": ["Title 1", "Title 2"],
+    "body": ["Some text here.", "Another text here."]
+}
 
 Notable HTTP status codes:
  401 Unauthorized: Session is not authorized for the requested entry.
@@ -159,7 +164,10 @@ Notable HTTP status codes:
 
 #[derive(Serialize)]
 struct EntryList {
-    uuids: Vec<String>,
+    uuid: Vec<String>,
+    created: Vec<String>,
+    title: Vec<String>,
+    body: Vec<String>,
 }
 
 #[get("/api/users/{user_uuid}/entries")]
@@ -170,8 +178,14 @@ async fn entry_list(
 {
     let uuids = Entry::uuids_by_user(&db_pool, &session.user_uuid).await?;
 
+    let entries_map = uuids.iter().map(|uuid| Entry::by_uuid(&db_pool, &uuid, &session.user_uuid));
+    let entries = futures::future::try_join_all(entries_map).await?;
+
     let response = web::Json(EntryList {
-        uuids: uuids,
+        uuid: uuids,
+        created: entries.iter().map(|entry| entry.created.clone()).collect(),
+        title: entries.iter().map(|entry| entry.title.clone()).collect(),
+        body: entries.iter().map(|entry| entry.body.clone()).collect(),
     }).respond_to(&req).map_into_boxed_body();
 
     Ok(response)
@@ -211,7 +225,7 @@ async fn entry_detail(
     path: web::Path<(String, String)>) -> Result<HttpResponse, Error>
 {
     let (_, entry_uuid) = path.into_inner();
-    let entry = Entry::by_uuid_and_user(&db_pool, &entry_uuid, &session.user_uuid).await?;
+    let entry = Entry::by_uuid(&db_pool, &entry_uuid, &session.user_uuid).await?;
 
     let response = web::Json(EntryDetail {
         created: entry.created,
@@ -297,7 +311,7 @@ async fn entry_update(
 {
     let (_, entry_uuid) = path.into_inner();
 
-    let entry = Entry::by_uuid_and_user(&db_pool, &entry_uuid, &session.user_uuid).await?;
+    let entry = Entry::by_uuid(&db_pool, &entry_uuid, &session.user_uuid).await?;
     entry.update(&db_pool, &info.title, &info.body).await?;
 
     Ok(HttpResponse::Ok().finish())
@@ -321,7 +335,7 @@ async fn entry_delete(
 {
     let (_, entry_uuid) = path.into_inner();
 
-    let entry = Entry::by_uuid_and_user(&db_pool, &entry_uuid, &session.user_uuid).await?;
+    let entry = Entry::by_uuid(&db_pool, &entry_uuid, &session.user_uuid).await?;
     entry.delete(&db_pool).await?;
 
     Ok(HttpResponse::Ok().finish())

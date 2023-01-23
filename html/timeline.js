@@ -46,7 +46,7 @@ function create_journal_group(datetime) {
     return group;
 }
 
-function create_journal_entry(entry_json, entry_uuid) {
+function create_journal_entry(entry_uuid, created, title, body) {
     let div = document.createElement("div");
     div.classList.add("entry");
 
@@ -55,60 +55,43 @@ function create_journal_entry(entry_json, entry_uuid) {
     link.setAttribute("href", "/editor.html?entry-uuid=" + entry_uuid);
     div.appendChild(link);
 
-    let title = document.createElement("h3");
-    title.innerHTML = entry_json.title;
-    link.appendChild(title);
+    let title_element = document.createElement("h3");
+    title_element.innerHTML = title;
+    link.appendChild(title_element);
 
-    let body = document.createElement("p");
-    body.innerHTML = entry_json.body;
-    div.appendChild(body);
+    let body_element = document.createElement("p");
+    body_element.innerHTML = body;
+    div.appendChild(body_element);
 
     return div;
-}
-
-function processAnotherEntry(uuids, i) {
-    if(i == uuids.length) {
-        return;
-    }
-
-    const entry_xhr = new XMLHttpRequest();
-
-    entry_xhr.onreadystatechange = function() {
-        if(this.readyState == 4 && this.status == 200) {
-            const entry = JSON.parse(entry_xhr.response);
-
-            const timeline = document.getElementById("timeline");
-
-            let group = document.getElementById(get_group_id_from_created(entry.created));
-            if(group == null) {
-                group = create_journal_group(entry.created);
-            }
-
-            const entry_element = create_journal_entry(entry, uuids[i]);
-            if(group.children.length == 1) {
-                group.appendChild(entry_element);
-            } else {
-                group.insertBefore(entry_element, group.children[1]);
-            }
-
-            processAnotherEntry(uuids, i + 1);
-        }
-    };
-
-    entry_xhr.open("GET", "/api/users/" + user_uuid + "/entries/" + uuids[i]);
-    entry_xhr.send();
-}
-
-function onListResponse() {
-    if(this.readyState == 4 && this.status == 200) {
-        const response = JSON.parse(this.response);
-        processAnotherEntry(response.uuids, 0);
-    }
 }
 
 const user_uuid = get_cookie_value("user_uuid");
 
 const list_xhr = new XMLHttpRequest();
-list_xhr.onreadystatechange = onListResponse;
+list_xhr.onreadystatechange = function() {
+    if(this.readyState == 4 && this.status == 200) {
+        const timeline = document.getElementById("timeline");
+        const response = JSON.parse(this.response);
+
+        response.uuid.forEach(function(uuid, index) {
+            const created = response.created[index];
+            const title = response.title[index];
+            const body = response.body[index];
+
+            let group = document.getElementById(get_group_id_from_created(response.created[index]));
+            if(group == null) {
+                group = create_journal_group(response.created[index]);
+            }
+
+            const entry_element = create_journal_entry(uuid, created, title, body);
+            if(group.children.length == 1) {
+                group.appendChild(entry_element);
+            } else {
+                group.insertBefore(entry_element, group.children[1]);
+            }
+        });
+    }
+};
 list_xhr.open("GET", "/api/users/" + user_uuid + "/entries");
 list_xhr.send();
