@@ -1,6 +1,7 @@
 pub mod create;
 pub mod delete;
 pub mod fetch;
+pub mod insert;
 pub mod list;
 pub mod update;
 mod utils;

@@ -77,6 +77,7 @@ async fn main() -> std::io::Result<()> {
             .service(handlers::entry_list)
             .service(handlers::entry_detail)
             .service(handlers::entry_create)
+            .service(handlers::entry_insert)
             .service(handlers::entry_update)
             .service(handlers::entry_delete)
             .service(actix_files::Files::new("/", html_dir).index_file("redirect.html"))

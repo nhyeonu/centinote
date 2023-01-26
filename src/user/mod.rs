@@ -1,6 +1,5 @@
 pub mod create;
 pub mod fetch;
-pub mod user;
 pub mod verify_password;
 
 pub struct User {
