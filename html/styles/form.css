@@ -13,12 +13,9 @@ form > * {
     width: 100%;
 }
 
-input[type=text], input[type=password] {
-    border-bottom: 1px solid var(--border-color); 
-}
-
 input {
     border: none;
+    border-bottom: 1px solid var(--border-color); 
     padding: 3px;
     font-size: 18px;
 }

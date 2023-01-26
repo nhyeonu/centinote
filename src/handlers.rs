@@ -237,36 +237,6 @@ async fn entry_detail(
 }
 
 /*
-TODO
-*/
-
-#[derive(Deserialize)]
-struct EntryInsert {
-    uuid: String,
-    created: String,
-    title: String,
-    body: String,
-}
-
-#[post("/api/users/{user_uuid}/entries")]
-async fn entry_insert(
-    session: Session,
-    db_pool: web::Data<PgPool>,
-    info: web::Json<EntryInsert>) -> Result<HttpResponse, Error>
-{
-    let entry = Entry::insert(
-        &db_pool,
-        &info.uuid,
-        &session.user_uuid,
-        &info.created,
-        &info.title,
-        &info.body).await?;
-
-    let entry_path = format!("/api/users/{}/entries/{}", &session.user_uuid, &entry.uuid);
-    Ok(HttpResponse::Created().insert_header(("Location", entry_path)).finish())
-}
-
-/*
 ===== POST /api/users/{user_uuid}/entries =====
 
 This handler creates an entry on success.
@@ -292,7 +262,7 @@ struct EntryCreate {
     body: String,
 }
 
-#[post("/api/users/{user_uuid}/entries/new")]
+#[post("/api/users/{user_uuid}/entries")]
 async fn entry_create(
     session: Session,
     db_pool: web::Data<PgPool>,

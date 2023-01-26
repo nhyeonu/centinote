@@ -102,5 +102,5 @@ if(entry_uuid != null) {
     xhr.send();
 } else {
     method = "POST";
-    target = "/api/users/" + user_uuid + "/entries/new";
+    target = "/api/users/" + user_uuid + "/entries";
 }
